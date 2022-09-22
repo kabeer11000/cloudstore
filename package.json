@@ -1,0 +1,17 @@
+{
+  "name": "cloudstore",
+  "version": "1.0.0",
+  "description": "Kabeer CloudStore server",
+  "author": "Kabeer's Network Authors",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "source/*"
+  ],
+  "scripts": {
+    "backend:start": "yarn --cwd source/backend dev",
+    "client:build": "yarn --cwd source/client build:esm"
+  },
+  "devDependencies": {
+  }
+}

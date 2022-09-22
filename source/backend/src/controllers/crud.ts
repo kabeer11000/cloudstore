@@ -3,6 +3,15 @@ import {IDeleteConfig, IInsertConfig, IUpdateConfig} from "../types";
 import MongoDatabasePromise from "../db-internals/mongo-client";
 import {Document, UpdateResult} from "mongodb";
 
+const FilterOperatorToMongoDBMap = {
+    "EQUAL": "$eq",
+    "GREATER": "$gt",
+    "LESSER": "$lt",
+    "GREATER_EQUAL": "$gte",
+    "LESSER_EQUAL": "$lte",
+    // Non Exhaustive
+}
+
 export async function UpdateHandler(socket: Socket<any, any>, config: IUpdateConfig) {
     const db = await MongoDatabasePromise;
     let actionOutPut: UpdateResult | undefined | Document;
@@ -21,14 +30,28 @@ export async function DeleteHandler(socket: Socket<any, any>, config: IDeleteCon
         requestConfig: config
     });
     const db = await MongoDatabasePromise;
-    if (config.type === "kn.cloudstore.document") await db.collection(config.collection.name).deleteOne({$and: config.query.structured.where});
-    if (config.type === "kn.cloudstore.document:array") await db.collection(config.collection.name).deleteMany({$and: config.query.structured.where});
-    socket.emit("delete-cb", {status: true});
+    const filters = config.query.structured.where.map(filter => ({
+        [filter.field]: {
+            // @ts-ignore
+            [FilterOperatorToMongoDBMap[filter.op]]: filter.value
+        }
+    }))
+    let deletionOutPut;
+    if (config.type === "kn.cloudstore.document") deletionOutPut = await db.collection(config.collection.name).deleteOne(filters.length ? {$and: filters} : {});
+    if (config.type === "kn.cloudstore.document:array") deletionOutPut = await db.collection(config.collection.name).deleteMany(filters.length ? {$and: filters} : {});
+    socket.emit("delete-cb-" + config.ref.id, {status: true, _deletion: deletionOutPut, filters: filters});
 }
 
 export async function InsertHandler(socket: Socket<any, any>, config: IInsertConfig) {
     /** Insertions can only be arrays, so for a single document, the array will contain one element **/
     const db = await MongoDatabasePromise;
-    const insertionOutPut = await db.collection(config.collection.name).insertMany(config.insertions, {});
-    socket.emit("insert-cb", {status: true, insertion: insertionOutPut});
+    if (!config || !config.ref) return console.log("insert failed: ", config);
+    try {
+        console.log("insert requested")
+        const insertionOutPut = await db.collection(config.collection.name).insertMany(config.insertions.map(({data}) => data), {});
+        socket.emit("insert-cb-" + config.ref.id, {status: true, _insertion: insertionOutPut});
+    } catch (e) {
+        socket.emit("insert-cb-" + config.ref.id, {status: false, _insertion: null, error: e})
+        console.log("insert write error")
+    }
 }

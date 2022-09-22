@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "preserveConstEnums": true,
+    "outDir": "bundled",
+    "declaration": true,
+    "sourceMap": true,
+    "declarationMap": true,
+    "paths": {
+      "@/types": ["./src/types"],
+      "@/events": ["./src/events"],
+      "@/config": ["./src/config"],
+      "@/controllers/*": ["./src/controllers/*"],
+      "@/classes/*": ["./src/classes/*"],
+      "@/db/*": ["./src/db-internals/*"],
+      "@/auth/*": ["./src/auth/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}

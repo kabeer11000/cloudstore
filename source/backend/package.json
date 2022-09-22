@@ -1,15 +1,19 @@
 {
-  "name": "cloudstore",
+  "name": "@kabeersnetwork/cloudstore-backend",
   "version": "1.0.0",
   "description": "Kabeer CloudStore server",
   "main": "bundled/index.js",
   "author": "Kabeer's Network Authors",
   "license": "MIT",
-  "private": true,
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "concurrently \"yarn run run:ts-watch\" \"yarn run run:node-start\"",
     "run:node-start": "nodemon ./bundled/index.js",
-    "run:ts-watch": "tsc --watch"
+    "run:ts-watch": "tsc --watch",
+    "create:docs": "typedoc"
   },
   "dependencies": {
     "bson": "^4.7.0",
@@ -29,6 +33,7 @@
     "nodemon": "^2.0.19",
     "ts-node": "^10.9.1",
     "tsc": "^2.0.4",
+    "typedoc": "^0.23.15",
     "typescript": "^4.8.2"
   }
 }

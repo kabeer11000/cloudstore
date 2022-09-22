@@ -12,13 +12,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.FilterOperatorToMongoDBMap = void 0;
 const mongo_client_1 = __importDefault(require("../db-internals/mongo-client"));
 const events_1 = __importDefault(require("../events"));
+exports.FilterOperatorToMongoDBMap = {
+    "EQUAL": "$eq",
+    "GREATER": "$gt",
+    "LESSER": "$lt",
+    "GREATER_EQUAL": "$gte",
+    "LESSER_EQUAL": "$lte",
+    // Non Exhaustive
+};
 function WatchController(socket, config) {
     return __awaiter(this, void 0, void 0, function* () {
         const db = yield mongo_client_1.default;
         const stream = db.collection(config.watchable.collection.name).watch([]);
-        stream.on("change", data => socket.emit(events_1.default.server.WATCH_CALLBACK(config.stream.id), data));
+        const filters = config.watchable.query.structured.where.map(filter => ({
+            [filter.field]: {
+                // @ts-ignore
+                [exports.FilterOperatorToMongoDBMap[filter.op]]: filter.value
+            }
+        }));
+        stream.on("change", (data) => __awaiter(this, void 0, void 0, function* () { return socket.emit(events_1.default.server.WATCH_CALLBACK(config.stream.id), { collection: yield db.collection(config.watchable.collection.name).find(filters.length ? { $and: [...filters] } : {}).toArray(), _update: data }); }));
         const activeWatchable = {
             database: {
                 name: db.databaseName,
@@ -34,15 +49,16 @@ function WatchController(socket, config) {
                 name: config.watchable.collection.name,
             }
         };
-        socket.data.activeWatchables.set(config.stream.id, activeWatchable);
+        socket.data.activeWatchables.add(config.stream.id, activeWatchable);
         /** Emit Resume Token Change Event **/
-        stream.once("resumeTokenChanged", token => socket.data.activeWatchables.set(config.stream.id, Object.assign(Object.assign({}, activeWatchable), { stream: Object.assign(Object.assign({}, activeWatchable.stream), { resumeToken: token }) })));
+        stream.once("resumeTokenChanged", token => socket.data.activeWatchables.add(config.stream.id, Object.assign(Object.assign({}, activeWatchable), { stream: Object.assign(Object.assign({}, activeWatchable.stream), { resumeToken: token }) })));
         socket.on(`watch:${config.stream.id}:close`, (config) => {
             stream.close();
             socket.data.activeWatchables.remove(config.stream.id);
             // Attempts to close the stream and remove dynamic listener
             socket.removeListener(`watch:${config.stream.id}:close`, () => socket.emit("closed-stream:" + config.stream.id));
         });
+        socket.emit(events_1.default.server.WATCH_CALLBACK(config.stream.id), { collection: yield db.collection(config.watchable.collection.name).find(filters.length ? { $and: [...filters] } : {}).toArray(), _update: {} });
     });
 }
 exports.default = WatchController;

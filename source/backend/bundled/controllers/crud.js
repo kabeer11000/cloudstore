@@ -14,6 +14,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InsertHandler = exports.DeleteHandler = exports.UpdateHandler = void 0;
 const mongo_client_1 = __importDefault(require("../db-internals/mongo-client"));
+const FilterOperatorToMongoDBMap = {
+    "EQUAL": "$eq",
+    "GREATER": "$gt",
+    "LESSER": "$lt",
+    "GREATER_EQUAL": "$gte",
+    "LESSER_EQUAL": "$lte",
+    // Non Exhaustive
+};
 function UpdateHandler(socket, config) {
     return __awaiter(this, void 0, void 0, function* () {
         const db = yield mongo_client_1.default;
@@ -39,11 +47,18 @@ function DeleteHandler(socket, config) {
                 requestConfig: config
             });
         const db = yield mongo_client_1.default;
+        const filters = config.query.structured.where.map(filter => ({
+            [filter.field]: {
+                // @ts-ignore
+                [FilterOperatorToMongoDBMap[filter.op]]: filter.value
+            }
+        }));
+        let deletionOutPut;
         if (config.type === "kn.cloudstore.document")
-            yield db.collection(config.collection.name).deleteOne({ $and: config.query.structured.where });
+            deletionOutPut = yield db.collection(config.collection.name).deleteOne(filters.length ? { $and: filters } : {});
         if (config.type === "kn.cloudstore.document:array")
-            yield db.collection(config.collection.name).deleteMany({ $and: config.query.structured.where });
-        socket.emit("delete-cb", { status: true });
+            deletionOutPut = yield db.collection(config.collection.name).deleteMany(filters.length ? { $and: filters } : {});
+        socket.emit("delete-cb-" + config.ref.id, { status: true, _deletion: deletionOutPut, filters: filters });
     });
 }
 exports.DeleteHandler = DeleteHandler;
@@ -51,8 +66,17 @@ function InsertHandler(socket, config) {
     return __awaiter(this, void 0, void 0, function* () {
         /** Insertions can only be arrays, so for a single document, the array will contain one element **/
         const db = yield mongo_client_1.default;
-        const insertionOutPut = yield db.collection(config.collection.name).insertMany(config.insertions, {});
-        socket.emit("insert-cb", { status: true, insertion: insertionOutPut });
+        if (!config || !config.ref)
+            return console.log("insert failed: ", config);
+        try {
+            console.log("insert requested");
+            const insertionOutPut = yield db.collection(config.collection.name).insertMany(config.insertions.map(({ data }) => data), {});
+            socket.emit("insert-cb-" + config.ref.id, { status: true, _insertion: insertionOutPut });
+        }
+        catch (e) {
+            socket.emit("insert-cb-" + config.ref.id, { status: false, _insertion: null, error: e });
+            console.log("insert write error");
+        }
     });
 }
 exports.InsertHandler = InsertHandler;

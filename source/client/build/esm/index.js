@@ -34,103 +34,103 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
 import { io } from 'socket.io-client';
+import { v4 } from "uuid";
+import { IndexedDB } from "./adapters";
+import QueryBuilder from "./classes/QueryBuilder";
+import Collection from "./classes/Collection";
 var CloudStore = /** @class */ (function () {
-    function CloudStore(active_socket) {
-        this.socket = undefined;
-        this.activeWatches = [];
-        this.status = "kn.cloudstore.disconnected";
-        if (!active_socket)
-            return;
-        this.socket = active_socket;
-        this.status = "kn.cloudstore.connected";
-    }
-    CloudStore.prototype.Where = function (from, field, op, value) {
-        var _this = this;
-        return {
-            watch: function (onUpdate, a) { return _this.Watch(onUpdate, {
-                stream: {
-                    id: Math.random().toString()
-                },
-                watchable: {
-                    type: "kn.cloudstore.collection",
-                    database: {
-                        name: "default",
-                    },
-                    collection: {
-                        name: from.name,
-                    },
-                    query: {
-                        structured: {
-                            from: {
-                                collection: from.name
-                            },
-                            where: [{
-                                    "field": field,
-                                    "op": op,
-                                    "value": value
-                                }],
-                            orderBy: {
-                                field: field,
-                                direction: "ASCENDING"
-                            },
-                            limit: null
-                        }
-                    }
+    function CloudStore(config) {
+        this.internals = {
+            socket: undefined,
+            constructorConfig: undefined,
+            connection: {
+                connected: false,
+                remote: {
+                    config: undefined
                 }
-            }); }
-        };
-    };
-    CloudStore.prototype.collection = function (name) {
-        var _this = this;
-        return {
-            // @ts-ignore
-            where: function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
+            },
+            contexts: {},
+            cache: {
+                active: "IF_NO_NETWORK",
+                storage: {
+                    adapter: new IndexedDB("_kn.cloudstore.cache.temp.collection")
                 }
-                return _this.Where.apply(_this, __spreadArray([{ name: name, database: "default" }], args, false));
             }
         };
-    };
-    CloudStore.prototype.Watch = function (onUpdate, config) {
-        var _a, _b;
-        (_a = this.socket) === null || _a === void 0 ? void 0 : _a.emit("watch", config);
-        this.activeWatches.push(config.stream.id);
-        (_b = this.socket) === null || _b === void 0 ? void 0 : _b.on("watchable-change-" + config.stream.id, function (data) {
-            onUpdate(data);
+        this.internals.socket = io(config.server.uri, {
+            extraHeaders: {
+                authorization: "Bearer ".concat(config.server.access.key)
+            }
+        });
+        this.internals.constructorConfig = config;
+        this.internals.cache.storage.adapter = config.cache.storage.adapter;
+    }
+    CloudStore.prototype.QueryWithCallback = function (eventName, data, callbackEventName, _a) {
+        var _this = this;
+        var _b = _a === void 0 ? { cleanup: true } : _a, cleanup = _b.cleanup;
+        return new Promise(function (resolve, reject) {
+            var _a, _b;
+            (_a = _this.internals.socket) === null || _a === void 0 ? void 0 : _a.on(callbackEventName, function (response) { return __awaiter(_this, void 0, void 0, function () {
+                var _a;
+                return __generator(this, function (_b) {
+                    if (!(response === null || response === void 0 ? void 0 : response.error))
+                        resolve(response);
+                    else
+                        reject(response);
+                    if (cleanup)
+                        (_a = this.internals.socket) === null || _a === void 0 ? void 0 : _a.removeListener(callbackEventName);
+                    return [2 /*return*/];
+                });
+            }); });
+            (_b = _this.internals.socket) === null || _b === void 0 ? void 0 : _b.emit(eventName, data);
         });
     };
+    CloudStore.prototype.connect = function () {
+        var _this = this;
+        if (!this.internals.socket)
+            throw new Error("Socket Doesn't Exist");
+        this.internals.socket.emit("config", {});
+        this.internals.socket.on("config-cb", function (data) {
+            _this.internals.connection.connected = true;
+            _this.internals.connection.remote.config = data;
+        });
+    };
+    Object.defineProperty(CloudStore.prototype, "query", {
+        get: function () {
+            var id = v4();
+            var query = new QueryBuilder(id);
+            this.internals.contexts[id] = query;
+            return query;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    CloudStore.prototype.collection = function (name) {
+        var _a, _b, _c;
+        (_a = this.internals.socket) === null || _a === void 0 ? void 0 : _a.on("collection-cb", function (response) {
+            if (!response.exists)
+                throw new Error("Collection: " + response.name + " does not exist");
+        });
+        (_b = this.internals.socket) === null || _b === void 0 ? void 0 : _b.emit("collection", { name: name });
+        if (!this.internals.socket || !((_c = this.internals.constructorConfig) === null || _c === void 0 ? void 0 : _c.database))
+            return;
+        return new Collection({
+            database: this.internals.constructorConfig.database,
+            collection: { exists: true, name: name },
+            socket: this.internals.socket
+        });
+    };
+    Object.defineProperty(CloudStore.prototype, "info", {
+        get: function () {
+            return this.internals;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    CloudStore.utils = {};
     return CloudStore;
 }());
-export default {
-    utils: {},
-    store: {
-        create: function (args) { return new Promise(function (resolve, reject) { return __awaiter(void 0, void 0, void 0, function () {
-            var socket;
-            return __generator(this, function (_a) {
-                if (!args.serverURI)
-                    throw Error("Server URI is required");
-                socket = io(args.serverURI, {
-                    extraHeaders: {
-                        authorization: "Bearer " + args.token
-                    }
-                });
-                socket.on("connection", function () {
-                    resolve(new CloudStore(socket));
-                });
-                return [2 /*return*/];
-            });
-        }); }); }
-    }
-};
+export default CloudStore;
+import * as Adapters_1 from "./adapters";
+export { Adapters_1 as Adapters };

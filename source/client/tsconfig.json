@@ -1,9 +1,26 @@
 {
-  "extends": "../../tsconfig.json",
+//  "extends": "../../tsconfig.base.json",
+//  "ts-node": {
+//    "transpileOnly": true,
+//    "require": [ "typescript-transform-paths/register" ],
+//  },
   "compilerOptions": {
     "preserveConstEnums": true,
-    "outDir": "bundled",
-    "declaration": true
+    "declaration": true,
+    "moduleResolution": "node",
+    "allowJs": true,
+    "paths": {
+      "@server-types": ["./src/@server-types"],
+      "@/types": ["./src/types"],
+      "@/adapters": ["./src/adapters"],
+      "@/classes/*": ["./src/classes/*"]
+    },
+    // Note: To transform paths for both the output .js and .d.ts files, you need both of the below entries
+    "plugins": [
+      // Transform paths in output .js files
+      { "transform": "typescript-transform-paths" }
+      // Transform paths in output .d.ts files (Include this line if you output declarations files)
+    ]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts"]

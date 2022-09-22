@@ -1,0 +1,45 @@
+{
+  "name": "@kabeersnetwork/cloudstore",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "build/**"
+  ],
+  "exports": {
+    ".": {
+      "import": "./build/esm/index.js",
+      "require": "./build/cjs/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "yarn run build:cjs && yarn run build:mjs",
+    "dev": "concurrently \"yarn run run:ts-watch\" \"yarn run run:node-start\"",
+    "run:node-start": "nodemon ./bundled/index.js",
+    "run:ts-watch": "concurrently \"yarn run build:esm\"",
+    "build:es2015": "tsc --module es2015 --target es2015 --outDir build/es2015 --declaration build/es2015/index.d.ts",
+    "build:esm": "ttsc --watch --module es2015 --target es5 --outDir build/esm --declaration --declarationDir build/esm",
+    "build:cjs": "tsc --module commonjs --target es5 --outDir build/cjs --declaration ./build/cjs/index.d.ts",
+    "build:umd": "rollup build/esm/index.js --format umd --name CloudStore --sourceMap --output build/umd/cloudstore.js",
+    "build:umd:min": "cd build/umd && uglifyjs --compress --mangle --source-map --screw-ie8 --comments --o cloudstore.min.js -- cloudstore.js && gzip cloudstore.min.js -c > cloudstore.min.js.gz",
+    "build:mjs": "tsc --rootDir src --outDir build/mjs --moduleResolution node --allowSyntheticDefaultImports --module esnext src/*.ts && mv build/mjs/index.js build/mjs/index.mjs",
+    "build:cjs2": "tsc --rootDir src --outDir build/cjs --moduleResolution node --esModuleInterop src/*.ts",
+    "create:docs": "typedoc"
+  },
+  "dependencies": {
+    "bson": "^4.7.0",
+    "idb-keyval": "^6.2.0",
+    "jsonwebtoken": "^8.5.1",
+    "socket.io-client": "^4.5.2",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^8.5.9",
+    "@types/uuid": "^8.3.4",
+    "typedoc": "^0.23.15",
+    "typescript-transform-paths": "^3.3.1"
+  }
+}

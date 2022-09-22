@@ -73,6 +73,9 @@ export interface IInsertionItem {
 
 export interface IInsertConfig {
     type: "kn.cloudstore.document:array",
+    ref: {
+        id: string
+    },
     database: {
         name: string,
         version?: string
@@ -107,6 +110,9 @@ export interface IDeleteConfig {
     database: {
         name: string,
         version?: string,
+    },
+    ref: {
+        id: string
     },
     collection: {
         name: string,

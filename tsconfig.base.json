@@ -1,4 +1,8 @@
 {
+  "references": [
+    { "path": "./source/client" },
+    { "path": "./source/backend" }
+  ],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
 

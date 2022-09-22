@@ -1,84 +1,85 @@
-import {io, Socket} from 'socket.io-client';
-import {ICreateStoreArgs} from "./types";
-import {IWatchConfig} from "./server-types/types";
+import {io} from 'socket.io-client';
+import {ICloudStoreConstructor, IInternalState} from "@/types";
+import {v4} from "uuid";
+import {IndexedDB} from "@/adapters";
+import QueryBuilder from "@/classes/QueryBuilder";
+import Collection from "@/classes/Collection";
 
-
-class CloudStore {
-    socket: Socket<any, any> | undefined = undefined;
-    activeWatches: Array<string> = [];
-    status = "kn.cloudstore.disconnected";
-
-    constructor(active_socket: Socket<any, any>) {
-        if (!active_socket) return;
-        this.socket = active_socket;
-        this.status = "kn.cloudstore.connected";
-    }
-
-    Where(from: { name: string, database: string }, field: string, op: string, value: object | string) {
-        return {
-            watch: (onUpdate: (update: object) => any, a: string) => this.Watch(onUpdate, {
-                stream: {
-                    id: Math.random().toString()
-                },
-                watchable: {
-                    type: "kn.cloudstore.collection",
-                    database: {
-                        name: "default",
-                    },
-                    collection: {
-                        name: from.name,
-                    },
-                    query: {
-                        structured: {
-                            from: {
-                                collection: from.name
-                            },
-                            where: [{ // Array of FieldFilters
-                                "field": field, // Field Name, e.g. user.emails
-                                "op": op,
-                                "value": value
-                            }],
-                            orderBy: {
-                                field: field,
-                                direction: "ASCENDING"
-                            },
-                            limit: null
-                        }
-                    }
-                }
-            })
+export default class CloudStore {
+    static utils = {};
+    private internals: IInternalState = {
+        socket: undefined,
+        constructorConfig: undefined,
+        connection: {
+            connected: false,
+            remote: {
+                config: undefined
+            }
+        },
+        contexts: {},
+        cache: {
+            active: "IF_NO_NETWORK",
+            storage: {
+                adapter: new IndexedDB("_kn.cloudstore.cache.temp.collection")
+            }
         }
+    };
+    constructor(config: ICloudStoreConstructor) {
+        this.internals.socket = io(config.server.uri, {
+            extraHeaders: {
+                authorization: `Bearer ${config.server.access.key}`
+            }
+        });
+        this.internals.constructorConfig = config;
+        this.internals.cache.storage.adapter = config.cache.storage.adapter;
     }
 
-    collection(name: string) {
-        return {
-            // @ts-ignore
-            where: (...args) => this.Where({name: name, database: "default"}, ...args)
-        }
-    }
-
-    Watch(onUpdate: (update: object) => any, config: IWatchConfig) {
-        this.socket?.emit("watch", config);
-        this.activeWatches.push(config.stream.id);
-        this.socket?.on("watchable-change-" + config.stream.id, (data: object) => {
-            onUpdate(data);
+    public connect() {
+        if (!this.internals.socket) throw new Error("Socket Doesn't Exist");
+        this.internals.socket.emit("config", {});
+        this.internals.socket.on("config-cb", (data: object) => {
+            this.internals.connection.connected = true;
+            this.internals.connection.remote.config = data;
         })
     }
-}
 
-export default {
-    utils: {},
-    store: {
-        create: (args: ICreateStoreArgs) => new Promise(async (resolve, reject) => {
-            if (!args.serverURI) throw Error("Server URI is required");
-            const socket = io(args.serverURI, {
-                extraHeaders: {
-                    authorization: "Bearer " + args.token
-                }
+
+
+    private QueryWithCallback(eventName: string, data: object, callbackEventName: string, {cleanup}: { cleanup: boolean } = {cleanup: true}) {
+        return new Promise((resolve, reject) => {
+            this.internals.socket?.on(callbackEventName, async (response: { error?: boolean, [x: string]: any }) => {
+                if (!response?.error) resolve(response);
+                else reject(response);
+                if (cleanup) this.internals.socket?.removeListener(callbackEventName);
             });
-            socket.on("connection", () => {
-                resolve(new CloudStore(socket));
-            })
-        })
+            this.internals.socket?.emit(eventName, data);
+        });
+    }
+    // @ts-ignore
+    public get query() {
+        const id = v4();
+        const query = new QueryBuilder(id)
+        this.internals.contexts[id] = query;
+        return query;
+    }
+
+    public collection(name: string) {
+        this.internals.socket?.on("collection-cb", (response: { name: string, exists: boolean }) => {
+            if (!response.exists) throw new Error("Collection: " + response.name + " does not exist");
+        });
+        this.internals.socket?.emit("collection", {name: name});
+        if (!this.internals.socket || !this.internals.constructorConfig?.database) return;
+        return new Collection({
+            database: this.internals.constructorConfig.database,
+            collection: {exists: true, name: name},
+            socket: this.internals.socket
+        });
+    }
+
+    // @ts-ignore
+    public get info() {
+        return this.internals;
     }
 }
+export * as Adapters from "@/adapters";
+export * as Types from "@/types";
