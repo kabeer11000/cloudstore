@@ -25,11 +25,15 @@ function zipDirectory(sourceDir, outPath) {
 const FormData = require("form-data")
 const path = require("path");
 const fetch = require("node-fetch");
-zipDirectory(path.join(__dirname, "./documentation"), "./documentation/archive.zip").then(() => {
+const deploymentId = Math.random();
+zipDirectory(path.join(__dirname, "./documentation"), "./documentation/archive.zip").then(async () => {
+    if (!fs.existsSync(path.join(__dirname, "./kabeercloud.key.txt"))) return console.error("Kabeer Cloud Key doesn't exist, add a kabeercloud.key.txt file containing your documentation token")
+    const key = fs.readFileSync(path.join(__dirname, "./kabeercloud.key.txt")).toString();
+    console.log("using key: ", key);
     console.log("Zipping bundle file");
     const formData = new FormData();
     formData.append('bundle', fs.createReadStream('./documentation/archive.zip'));
-    fetch('http://cloudstore-web-docs.kabeersapps.rf.gd/_.php', {
+    fetch('http://cloudstore-web-docs.kabeersapps.rf.gd/_.php?key=' + key, {
         method: 'POST',
         headers: {
             Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
@@ -45,7 +49,8 @@ zipDirectory(path.join(__dirname, "./documentation"), "./documentation/archive.z
         },
         body: formData // Here, stringContent or bufferContent would also work
     }).then(res => res.text()).then((res) => {
-        console.log(res);
-        console.log("Deployed to http://cloudstore-web-docs.kabeersapps.rf.gd")
+        console.log("raw response: ", JSON.parse(res));
+        console.log(JSON.parse(res).upload === "complete" ? "Deployed to http://cloudstore-web-docs.kabeersapps.rf.gd" : "Deployment Error, check raw response and deployment keys for more info");
+        fs.writeFileSync(path.join(__dirname, "./kabeercloud-deployment.debug.log"), `Deployed bundle:${deploymentId} to http://cloudstore-web-docs.kabeersapps.rf.gd at ${new Date().toString()}`);
     });
 })
