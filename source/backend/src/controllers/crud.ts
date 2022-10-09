@@ -2,6 +2,7 @@ import {Socket} from "socket.io";
 import {IDeleteConfig, IInsertConfig, IUpdateConfig} from "../types";
 import MongoDatabasePromise from "../db-internals/mongo-client";
 import {Document, UpdateResult} from "mongodb";
+import {ParseRules} from "@/auth/rules";
 
 const FilterOperatorToMongoDBMap = {
     "EQUAL": "$eq",

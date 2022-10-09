@@ -27,7 +27,9 @@
     "build:umd:min": "cd build/umd && uglifyjs --compress --mangle --source-map --screw-ie8 --comments --o cloudstore.min.js -- cloudstore.js && gzip cloudstore.min.js -c > cloudstore.min.js.gz",
     "build:mjs": "tsc --rootDir src --outDir build/mjs --moduleResolution node --allowSyntheticDefaultImports --module esnext src/*.ts && mv build/mjs/index.js build/mjs/index.mjs",
     "build:cjs2": "tsc --rootDir src --outDir build/cjs --moduleResolution node --esModuleInterop src/*.ts",
-    "create:docs": "typedoc"
+    "create:docs": "typedoc",
+    "workflow:deploy": "node ./update-documentation.js",
+    "documentation:workflow": "yarn run create:docs && yarn run workflow:deploy"
   },
   "dependencies": {
     "bson": "^4.7.0",
@@ -39,6 +41,10 @@
   "devDependencies": {
     "@types/jsonwebtoken": "^8.5.9",
     "@types/uuid": "^8.3.4",
+    "archiver": "^5.3.1",
+    "form-data": "^4.0.0",
+    "node-fetch": "2.6.7",
+    "ttypescript": "^1.5.13",
     "typedoc": "^0.23.15",
     "typescript-transform-paths": "^3.3.1"
   }

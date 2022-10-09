@@ -17,6 +17,9 @@ const socket_io_1 = require("socket.io");
 const config_1 = require("./config");
 const crud_1 = require("./controllers/crud");
 const mongo_client_1 = __importDefault(require("./db-internals/mongo-client"));
+const events_1 = __importDefault(require("./events"));
+const authorization_1 = __importDefault(require("./controllers/authorization"));
+const lexer_1 = require("./rules/lexer");
 require("dotenv").config({});
 const io = new socket_io_1.Server(8080, {
     cors: {
@@ -24,26 +27,24 @@ const io = new socket_io_1.Server(8080, {
         methods: ["GET", "POST"]
     }
 });
-// io.use(AuthorizationListener);
-io.on("connection", (socket) => {
-    socket.data.activeWatchables = new Set();
+io.use(authorization_1.default);
+io.on("connection", (socket) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("a device: ", socket.id, " has connected");
-    socket.on("config", (d) => socket.emit("config-cb", { _s: config_1.ServerVersion }));
-    socket.on("collection", (config) => __awaiter(void 0, void 0, void 0, function* () {
+    (0, lexer_1.ParseExpression)();
+    socket.data.activeWatchables = new Set();
+    socket.on(events_1.default.config.config(), () => socket.emit("config-cb", { _s: config_1.ServerVersion }));
+    socket.on(events_1.default.collection.collection(), (config) => __awaiter(void 0, void 0, void 0, function* () {
         const db = yield mongo_client_1.default;
         const collections = yield db.collections();
-        socket.emit("collections-cb", {
+        socket.emit(events_1.default.collection.collectionCB(config.streamId), {
             exists: !!collections.find(a => a.collectionName === config.name),
-            name: config.name
+            name: config.name,
         });
     }));
-    // Implements watch, watch-cb, watch:[STREAM_ID]:close, closed-stream:[STREAM_ID]
     socket.on("watch", (d) => (0, watch_1.default)(socket, d));
-    // Implements update update-cb
     socket.on("update", (d) => (0, crud_1.UpdateHandler)(socket, d));
-    // Implements delete deletion-error and delete-cb
     socket.on("delete", (d) => (0, crud_1.DeleteHandler)(socket, d));
-    // Implements insert insertion-error and insert-cb-[REF_ID]
     socket.on("insert", (d) => (0, crud_1.InsertHandler)(socket, d));
-});
+}));
 console.log("socket server started on port http://localhost:8080/");
+//# sourceMappingURL=index.js.map

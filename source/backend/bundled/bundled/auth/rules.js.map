@@ -1,0 +1,1 @@
+{"version":3,"file":"rules.js","sourceRoot":"","sources":["../../../src/bundled/auth/rules.ts"],"names":[],"mappings":";;;;;;;;;;;;;;;AAAA,sDAA2B;AAC3B,0CAAqC;AACrC,+BAA0B;AAGnB,MAAM,UAAU,GAAG,GAAS,EAAE;IACjC,OAAO,iBAAI,CAAC,IAAI,CAAC,CAAC,MAAM,IAAA,mBAAQ,EAAC,IAAA,WAAI,EAAC,SAAS,EAAE,gBAAgB,CAAC,CAAC,CAAC,CAAC,QAAQ,EAAE,CAAC,CAAC;AACrF,CAAC,CAAA,CAAA;AAFY,QAAA,UAAU,cAEtB"}

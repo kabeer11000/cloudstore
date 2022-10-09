@@ -4,11 +4,12 @@ import Collection from "@/classes/Collection";
 export default class CloudStore {
     static utils: {};
     private internals;
-    private QueryWithCallback;
     constructor(config: ICloudStoreConstructor);
     connect(): void;
+    private QueryWithCallback;
     get query(): QueryBuilder;
     collection(name: string): Collection;
     get info(): IInternalState;
 }
-export * as Adapters from "./adapters";
+export * as Adapters from "@/adapters";
+export * as Types from "@/types";

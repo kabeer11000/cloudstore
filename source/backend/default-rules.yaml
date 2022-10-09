@@ -1,20 +1,10 @@
-{
-  "rules": {
-    "collection": {
-      "users": {
-        # $request.data.username is the username from the request where fields
-        # $[field] means
-        ".read": "$request.data.username === $username",
-        ".write": "$request.config.upsert === FALSE"
-      }
-    },
-    "foo": {
-      # allows read to /foo/*
-      ".read": "data.child('baz').val() === true",
-      "bar": {
-        /* ignored, since read was allowed already */
-        ".read": false
-      }
-    }
-  }
-}
+databases:
+  - name: "cloudstore-demo"
+    rules:
+      collections:
+        ".default":
+          ".read": "$request.data.username === $operation.query.username"
+          ".write": "$operation.config.upsert === TRUE"
+        users:
+          ".read": "$request.data.username === $operation.query.username"
+          ".write": "$operation.config.upsert === TRUE"

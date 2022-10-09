@@ -1,0 +1,10 @@
+databases:
+  name: "cloudstore-demo"
+  rules:
+    collections:
+      .default:
+        .read: "$request.data.username === $operation.query.username",
+        .write: "$operation.config.upsert === TRUE"
+      users:
+        .read: "$request.data.username === $operation.query.username",
+        .write: "$operation.config.upsert === TRUE"

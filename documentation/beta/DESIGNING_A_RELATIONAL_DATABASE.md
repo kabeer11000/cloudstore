@@ -1,0 +1,1 @@
+medium article on: https://towardsdatascience.com/designing-a-relational-database-and-creating-an-entity-relationship-diagram-89c1c19320b2

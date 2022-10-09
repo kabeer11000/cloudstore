@@ -4,6 +4,9 @@ import {ServerVersion} from "./config";
 import {DeleteHandler, InsertHandler, UpdateHandler} from "@/controllers/crud";
 import MongoDatabasePromise from "@/db/mongo-client";
 import Events from "@/events";
+import Authorization from "@/controllers/authorization";
+import {ParseRules} from "@/auth/rules";
+import {ParseExpression} from "./rules/lexer";
 
 require("dotenv").config({});
 const io = new Server(8080, {
@@ -13,19 +16,20 @@ const io = new Server(8080, {
     }
 });
 
-// io.use(AuthorizationListener);
-io.on("connection", (socket) => {
-    socket.data.activeWatchables = new Set();
+io.use(Authorization);
+io.on("connection", async (socket) => {
     console.log("a device: ", socket.id, " has connected");
+    ParseExpression();
+    socket.data.activeWatchables = new Set();
     socket.on(Events.config.config(), () => socket.emit("config-cb", {_s: ServerVersion}));
     socket.on(Events.collection.collection(), async (config: { name: string, streamId: string }) => {
         const db = await MongoDatabasePromise;
         const collections = await db.collections();
         socket.emit(Events.collection.collectionCB(config.streamId), {
             exists: !!collections.find(a => a.collectionName === config.name),
-            name: config.name
+            name: config.name,
         });
-    })
+    });
     // Implements watch, watch-cb, watch:[STREAM_ID]:close, closed-stream:[STREAM_ID]
     socket.on("watch", (d) => WatchController(socket, d));
     // Implements update update-cb

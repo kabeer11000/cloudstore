@@ -4,7 +4,7 @@ import CloudStore, {Adapters} from "@kabeersnetwork/cloudstore";
 import {useCollection} from "./hooks.jsx";
 import {createContext} from "preact";
 import {v4} from "uuid";
-import Loginscreen from "./components/loginscreen.jsx";
+
 export const DataContext = createContext(undefined);
 const TodoList = () => {
     // cloudStore.query.where("username", "EQUAL", "kabeer11000").limit(2).orderBy("user", "ASCENDING").where("password", "EQUAL", "uganda123")
@@ -45,13 +45,14 @@ const cloudStore = new CloudStore({
     },
     cache: {
         storage: {
-            adapter: new Adapters.IndexedDB("cloudstore.demo.collection")
+            adapter: new Adapters.IndexedDB("cloudstore.demo.collection:1")
         }
     },
     database: {
         name: "cloudstore"
     },
 });
+console.log(cloudStore);
 
 export function App() {
     const [input, setInput] = useState("");

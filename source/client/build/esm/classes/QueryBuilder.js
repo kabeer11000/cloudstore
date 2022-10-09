@@ -23,6 +23,7 @@ var QueryBuilder = /** @class */ (function () {
         return this;
     };
     Object.defineProperty(QueryBuilder.prototype, "_query", {
+        // @ts-ignore
         get: function () {
             return this.query;
         },

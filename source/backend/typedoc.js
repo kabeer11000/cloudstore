@@ -3,5 +3,5 @@
  */
 module.exports = {
     entryPoints: ["./src/index.ts"],
-    out: "documentation"
+    out: "documentation/api"
 }

@@ -61,11 +61,24 @@ var CloudStore = /** @class */ (function () {
         this.internals.socket = io(config.server.uri, {
             extraHeaders: {
                 authorization: "Bearer ".concat(config.server.access.key)
+            },
+            query: {
+                id: config.server.access.key
             }
         });
         this.internals.constructorConfig = config;
         this.internals.cache.storage.adapter = config.cache.storage.adapter;
     }
+    CloudStore.prototype.connect = function () {
+        var _this = this;
+        if (!this.internals.socket)
+            throw new Error("Socket Doesn't Exist");
+        this.internals.socket.emit("config", {});
+        this.internals.socket.on("config-cb", function (data) {
+            _this.internals.connection.connected = true;
+            _this.internals.connection.remote.config = data;
+        });
+    };
     CloudStore.prototype.QueryWithCallback = function (eventName, data, callbackEventName, _a) {
         var _this = this;
         var _b = _a === void 0 ? { cleanup: true } : _a, cleanup = _b.cleanup;
@@ -86,17 +99,8 @@ var CloudStore = /** @class */ (function () {
             (_b = _this.internals.socket) === null || _b === void 0 ? void 0 : _b.emit(eventName, data);
         });
     };
-    CloudStore.prototype.connect = function () {
-        var _this = this;
-        if (!this.internals.socket)
-            throw new Error("Socket Doesn't Exist");
-        this.internals.socket.emit("config", {});
-        this.internals.socket.on("config-cb", function (data) {
-            _this.internals.connection.connected = true;
-            _this.internals.connection.remote.config = data;
-        });
-    };
     Object.defineProperty(CloudStore.prototype, "query", {
+        // @ts-ignore
         get: function () {
             var id = v4();
             var query = new QueryBuilder(id);
@@ -122,6 +126,7 @@ var CloudStore = /** @class */ (function () {
         });
     };
     Object.defineProperty(CloudStore.prototype, "info", {
+        // @ts-ignore
         get: function () {
             return this.internals;
         },
@@ -134,3 +139,5 @@ var CloudStore = /** @class */ (function () {
 export default CloudStore;
 import * as Adapters_1 from "./adapters";
 export { Adapters_1 as Adapters };
+import * as Types_1 from "./types";
+export { Types_1 as Types };

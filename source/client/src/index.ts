@@ -28,6 +28,9 @@ export default class CloudStore {
         this.internals.socket = io(config.server.uri, {
             extraHeaders: {
                 authorization: `Bearer ${config.server.access.key}`
+            },
+            query: {
+                id: config.server.access.key
             }
         });
         this.internals.constructorConfig = config;
@@ -75,7 +78,6 @@ export default class CloudStore {
             socket: this.internals.socket
         });
     }
-
     // @ts-ignore
     public get info() {
         return this.internals;
