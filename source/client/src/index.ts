@@ -45,9 +45,6 @@ export default class CloudStore {
             this.internals.connection.remote.config = data;
         })
     }
-
-
-
     private QueryWithCallback(eventName: string, data: object, callbackEventName: string, {cleanup}: { cleanup: boolean } = {cleanup: true}) {
         return new Promise((resolve, reject) => {
             this.internals.socket?.on(callbackEventName, async (response: { error?: boolean, [x: string]: any }) => {

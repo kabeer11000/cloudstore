@@ -1,0 +1,15 @@
+<svg width="96" height="112" viewBox="0 0 96 112" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M49.2565 3.83873L48 3.10818L46.7435 3.83873L3.74345 28.8387L2.5 29.5617V31V81V82.4383L3.74345 83.1613L46.7435 108.161L48 108.892L49.2565 108.161L92.2566 83.1613L93.5 82.4383V81V31V29.5617L92.2566 28.8387L49.2565 3.83873Z" fill="url(#paint0_radial_305_78)" stroke="black" stroke-width="5"/>
+    <path d="M6.98957 81L48 57.1567L89.0104 81L48 104.843L6.98957 81Z" fill="#1A2E4D" stroke="white" stroke-width="2"/>
+    <path d="M9.97393 31L48 8.89182L86.0261 31L48 53.1082L9.97393 31Z" fill="url(#paint1_linear_305_78)" stroke="white" stroke-width="5"/>
+    <defs>
+        <radialGradient id="paint0_radial_305_78" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(48 56) rotate(90) scale(50 43)">
+            <stop stop-color="#6FCF97"/>
+            <stop offset="1" stop-color="#219653"/>
+        </radialGradient>
+        <linearGradient id="paint1_linear_305_78" x1="48" y1="6" x2="48" y2="56" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#59C4D1"/>
+            <stop offset="1" stop-color="#00A4B8"/>
+        </linearGradient>
+    </defs>
+</svg>

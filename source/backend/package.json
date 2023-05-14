@@ -19,6 +19,7 @@
     "remove:bundled": "node ./remove-bundle.js"
   },
   "dependencies": {
+    "@kabeersnetwork/csel": "^1.1.6",
     "bson": "^4.7.0",
     "chevrotain": "^10.3.0",
     "dotenv": "^16.0.2",
