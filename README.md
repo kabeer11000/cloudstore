@@ -1,6 +1,8 @@
-**Note:**
+<b>Note:</b>
 Parts of this documentation was generated using AI LLM, If there's an error feel free to open a pull request,
+
 ---
+
 # Kabeer Cloudstore
 
 Kabeer Cloudstore, also known as Cloudstore, is a powerful real-time database engine that can be used in web applications, mobile applications, and self-hosted environments. It provides similar functionality to Firebase Firestore, with real-time updates, scalability, and a flexible API for accessing data. However, Cloudstore includes additional features that make it stand out, such as a powerful database rules engine based on CSEL (Cloud Store Expression Language).
@@ -18,7 +20,7 @@ To get started with Cloudstore, you can download the self-hosted version. The se
 
 Once you have your database set up, you can start storing and retrieving data in real-time. You can also define custom validation and logic rules using the CSEL-based database rules engine to ensure data consistency and enforce business rules.
 
-## Contributing 
+## Contributing
 
 Please check out the <a href="./CONTRIBUTING.md">CONTRIBUTING.md</a> file, code architecture, and source is documented.
 
