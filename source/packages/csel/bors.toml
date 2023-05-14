@@ -1,0 +1,8 @@
+status = [
+  "ci/circleci: build-node8",
+  "ci/circleci: test-node8",
+  "ci/circleci: lint-node8",
+  "ci/circleci: build-node9",
+  "ci/circleci: test-node9",
+  "ci/circleci: lint-node9",
+]

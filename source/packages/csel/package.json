@@ -1,0 +1,50 @@
+{
+  "version": "1.1.6",
+  "name": "@kabeersnetwork/csel",
+  "description": "Javascript Expression Language: Powerful context-based expression parser and evaluator",
+  "main": "lib/Jexl.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "watch": "webpack --config ./webpack.config.js --watch",
+    "build": "webpack --config ./webpack.config.js",
+    "test": "mocha -R spec --recursive test",
+    "lint": "eslint lib test .eslintrc.js --ignore-pattern '!.eslintrc.js'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kabeer11000/cloud"
+  },
+  "keywords": [
+    "JSON",
+    "expression",
+    "evaluator",
+    "parser",
+    "target",
+    "context",
+    "jsep",
+    "filter",
+    "selector"
+  ],
+  "authors": [
+    "Tom Shawver <tom@frosteddesign.com>",
+    "Michael Cooper <mcooper@mozilla.com>"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kabeer11000/cloud/issues"
+  },
+  "homepage": "https://developers.kabeers.network",
+  "devDependencies": {
+    "chai": "^2.0.0",
+    "chai-as-promised": "^4.2.0",
+    "eslint": "^8.24.0",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-prettier": "^2.6.0",
+    "license-webpack-plugin": "0.5.1",
+    "mocha": "^2.1.0",
+    "prettier": "^1.10.2",
+    "webpack": "3.1.0"
+  }
+}

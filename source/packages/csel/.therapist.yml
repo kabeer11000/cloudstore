@@ -1,0 +1,11 @@
+actions:
+  prettier:
+    description: Prettier
+    run: ./node_modules/.bin/prettier --write {files} && git add -A
+    include: "*.js"
+
+  eslint:
+   description: ESLint
+   run: ./node_modules/.bin/eslint {files}
+   include:
+      - "*.js"

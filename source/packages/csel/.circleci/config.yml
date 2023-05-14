@@ -1,0 +1,66 @@
+version: 2
+
+shared:
+  node12: &node12
+    docker:
+      - image: cimg/node:12.22
+
+  restore-yarn-cache: &restore-yarn-cache
+    restore_cache:
+      key: yarn-cache-{{ checksum "yarn.lock" }}
+
+  build: &build
+    steps:
+      - checkout
+      - *restore-yarn-cache
+      - run:
+          name: Yarn Install
+          command: yarn install --cache-folder ~/.cache/yarn
+      - save_cache:
+          key: yarn-cache-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn
+            - node_modules
+
+  test: &test
+    steps:
+      - checkout
+      - *restore-yarn-cache
+      - run:
+          name: Test
+          command: yarn test
+
+  lint: &lint
+    steps:
+      - checkout
+      - *restore-yarn-cache
+      - run:
+          name: Test
+          command: yarn lint
+
+jobs:
+  build-node12:
+    <<: *build
+    <<: *node12
+
+  test-node12:
+    <<: *test
+    <<: *node12
+
+  lint-node12:
+    <<: *lint
+    <<: *node12
+
+workflows:
+  version: 2
+  pr:
+    jobs:
+      - build-node12
+
+      - lint-node12:
+          requires:
+            - build-node12
+
+      - test-node12:
+          requires:
+            - build-node12
