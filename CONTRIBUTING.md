@@ -1,4 +1,4 @@
-**Note:**
+<b>Note:</b>
 Parts of this documentation was generated using AI LLM, If there's an error feel free to open a pull request,
 ---
 # Kabeer Cloudstore Source Code Structure
