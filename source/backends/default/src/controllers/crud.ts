@@ -1,8 +1,7 @@
-import {Socket} from "socket.io";
-import {IDeleteConfig, IInsertConfig, IUpdateConfig} from "../types";
-import MongoDatabasePromise from "../db-internals/mongo-client";
-import {Document, UpdateResult} from "mongodb";
-import {ParseRules} from "@/auth/rules";
+import { Socket } from "socket.io";
+import { IDeleteConfig, IInsertConfig, IUpdateConfig } from "@/types";
+import MongoDatabasePromise from "@/db/mongo-client";
+import { Document, UpdateResult } from "mongodb";
 
 const FilterOperatorToMongoDBMap = {
     "EQUAL": "$eq",
@@ -22,7 +21,7 @@ export async function UpdateHandler(socket: Socket<any, any>, config: IUpdateCon
     if (config.updatable.type === "kn.cloudstore.document") actionOutPut = await db.collection(config.updatable.collection.name).updateOne({
         $and: config.updatable.query.structured.where
     }, config.updatable.query.structured.update.data) // $lt, $le, and all atomic operators work out of the box
-    socket.emit("update-cb", {status: true, ...actionOutPut});
+    socket.emit("update-cb", { status: true, ...actionOutPut });
 }
 
 export async function DeleteHandler(socket: Socket<any, any>, config: IDeleteConfig) {
@@ -38,9 +37,9 @@ export async function DeleteHandler(socket: Socket<any, any>, config: IDeleteCon
         }
     }))
     let deletionOutPut;
-    if (config.type === "kn.cloudstore.document") deletionOutPut = await db.collection(config.collection.name).deleteOne(filters.length ? {$and: filters} : {});
-    if (config.type === "kn.cloudstore.document:array") deletionOutPut = await db.collection(config.collection.name).deleteMany(filters.length ? {$and: filters} : {});
-    socket.emit("delete-cb-" + config.ref.id, {status: true, _deletion: deletionOutPut, filters: filters});
+    if (config.type === "kn.cloudstore.document") deletionOutPut = await db.collection(config.collection.name).deleteOne(filters.length ? { $and: filters } : {});
+    if (config.type === "kn.cloudstore.document:array") deletionOutPut = await db.collection(config.collection.name).deleteMany(filters.length ? { $and: filters } : {});
+    socket.emit("delete-cb-" + config.ref.id, { status: true, _deletion: deletionOutPut, filters: filters });
 }
 
 export async function InsertHandler(socket: Socket<any, any>, config: IInsertConfig) {
@@ -48,11 +47,11 @@ export async function InsertHandler(socket: Socket<any, any>, config: IInsertCon
     const db = await MongoDatabasePromise;
     if (!config || !config.ref) return console.log("insert failed: ", config);
     try {
-        console.log("insert requested")
-        const insertionOutPut = await db.collection(config.collection.name).insertMany(config.insertions.map(({data}) => data), {});
-        socket.emit("insert-cb-" + config.ref.id, {status: true, _insertion: insertionOutPut});
+        console.log("insert requested");
+        const insertionOutPut = await db.collection(config.collection.name).insertMany(config.insertions.map(({ data }) => data), {});
+        socket.emit("insert-cb-" + config.ref.id, { status: true, _insertion: insertionOutPut });
     } catch (e) {
-        socket.emit("insert-cb-" + config.ref.id, {status: false, _insertion: null, error: e})
-        console.log("insert write error")
+        socket.emit("insert-cb-" + config.ref.id, { status: false, _insertion: null, error: e })
+        console.log("insert write error");
     }
 }

@@ -1,8 +1,8 @@
-import {IActiveWatchable, IWatchConfig} from "@/types";
+import { IActiveWatchable, IWatchConfig } from "@/types";
 import MongoDatabasePromise from "@/db/mongo-client";
-import {Socket} from "socket.io";
+import { Socket } from "socket.io";
 import Events from "@/events";
-import {ParseRules} from "@/auth/rules";
+// import { ParseRules } from "@/auth/rules";
 export const FilterOperatorToMongoDBMap = {
     "EQUAL": "$eq",
     "GREATER": "$gt",
@@ -20,9 +20,8 @@ export default async function WatchController(socket: Socket<any, any>, config: 
             [FilterOperatorToMongoDBMap[filter.op]]: filter.value
         }
     }));
-    const databaseRules = (await ParseRules())?.databases.find(({name}: {name: string}) => name === "cloudstore-demo" ?? config.watchable.database.name);
-    // console.log(databaseRules?.rules?.collections);
-    stream.on("change", async data => socket.emit(Events.server.WATCH_CALLBACK(config.stream.id), {collection: await db.collection(config.watchable.collection.name).find(filters.length ? {$and: [...filters]} : {}).toArray(), _update: data}));
+    // const databaseRules = (await ParseRules())?.databases.find(({ name }: { name: string }) => name === "cloudstore-demo" ?? config.watchable.database.name);
+    stream.on("change", async data => socket.emit(Events.server.WATCH_CALLBACK(config.stream.id), { collection: await db.collection(config.watchable.collection.name).find(filters.length ? { $and: [...filters] } : {}).toArray(), _update: data }));
     const activeWatchable: IActiveWatchable = {
         database: {
             name: db.databaseName,
@@ -53,5 +52,5 @@ export default async function WatchController(socket: Socket<any, any>, config: 
         // Attempts to close the stream and remove dynamic listener
         socket.removeListener(`watch:${config.stream.id}:close`, () => socket.emit("closed-stream:" + config.stream.id));
     });
-    socket.emit(Events.server.WATCH_CALLBACK(config.stream.id), {collection: await db.collection(config.watchable.collection.name).find(filters.length ? {$and: [...filters]} : {}).toArray(), _update: {}})
+    socket.emit(Events.server.WATCH_CALLBACK(config.stream.id), { collection: await db.collection(config.watchable.collection.name).find(filters.length ? { $and: [...filters] } : {}).toArray(), _update: {} })
 }
