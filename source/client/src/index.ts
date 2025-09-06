@@ -1,7 +1,7 @@
-import {io} from 'socket.io-client';
-import {ICloudStoreConstructor, IInternalState} from "@/types";
-import {v4} from "uuid";
-import {IndexedDB} from "@/adapters";
+import { io } from 'socket.io-client';
+import { ICloudStoreConstructor, IInternalState } from "@/types";
+import { v4 } from "uuid";
+import { IndexedDB } from "@/adapters";
 import QueryBuilder from "@/classes/QueryBuilder";
 import Collection from "@/classes/Collection";
 
@@ -38,6 +38,9 @@ export default class CloudStore {
     }
 
     public connect() {
+        /**
+         * Synchronous Config call 
+        **/
         if (!this.internals.socket) throw new Error("Socket Doesn't Exist");
         this.internals.socket.emit("config", {});
         this.internals.socket.on("config-cb", (data: object) => {
@@ -45,7 +48,7 @@ export default class CloudStore {
             this.internals.connection.remote.config = data;
         })
     }
-    private QueryWithCallback(eventName: string, data: object, callbackEventName: string, {cleanup}: { cleanup: boolean } = {cleanup: true}) {
+    private QueryWithCallback(eventName: string, data: object, callbackEventName: string, { cleanup }: { cleanup: boolean } = { cleanup: true }) {
         return new Promise((resolve, reject) => {
             this.internals.socket?.on(callbackEventName, async (response: { error?: boolean, [x: string]: any }) => {
                 if (!response?.error) resolve(response);
@@ -64,14 +67,22 @@ export default class CloudStore {
     }
 
     public collection(name: string) {
-        this.internals.socket?.on("collection-cb", (response: { name: string, exists: boolean }) => {
-            if (!response.exists) throw new Error("Collection: " + response.name + " does not exist");
+        /**
+         * Synchronous Config call 
+        **/
+        const ref = v4();
+        this.internals.socket?.on("collection-cb-" + ref, (response: { name: string, exists: boolean }) => {
+            if (!response.exists) throw new Error("Collection: " + response.name + " does not exist?");
         });
-        this.internals.socket?.emit("collection", {name: name});
+        this.internals.socket?.emit("collection", {
+            name: name, ref: {
+                id: ref
+            }
+        });
         if (!this.internals.socket || !this.internals.constructorConfig?.database) return;
         return new Collection({
             database: this.internals.constructorConfig.database,
-            collection: {exists: true, name: name},
+            collection: { exists: true, name: name },
             socket: this.internals.socket
         });
     }

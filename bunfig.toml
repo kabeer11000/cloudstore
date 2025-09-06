@@ -1,0 +1,6 @@
+[install]
+# Optional: Configure registry if needed
+# registry = "https://registry.npmjs.org/"
+
+[install.scopes]
+# Configure any scoped packages if needed
