@@ -17,7 +17,7 @@ export const Authorization = async (socket: Socket<DefaultEventsMap, DefaultEven
         socket.auth.verified = true;
         socket.auth.data = decoded;
         return next();
-    } catch (e) {
+    } catch (e) {   
         return next(new Error('error, Failed to verify Bearer token against tenant. '));
     }
 }
