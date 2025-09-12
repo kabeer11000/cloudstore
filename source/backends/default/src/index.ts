@@ -11,7 +11,7 @@ import { IWatchConfig, IUpdateConfig, IDeleteConfig, IInsertConfig } from "@/typ
 require("dotenv").config({});
 const io = new Server(8080, {
     cors: {
-        origin: "http://localhost:5173",
+        origin: "http://localhost:4321",
         methods: ["GET", "POST"]
     }
 });
