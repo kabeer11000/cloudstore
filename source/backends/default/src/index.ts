@@ -23,7 +23,7 @@ io.on("connection", async (socket: { id: any; data: { activeWatchables: Set<unkn
     socket.data.activeWatchables = new Set();
     socket.on(Events.config.config(), async () => socket.emit("config-cb", { _s: ServerVersion }));
     socket.on(Events.collection.collection(), async (config: { name: string, ref: {id: string} }) => {
-        const db = await MongoDatabasePromise;
+        const db = (await MongoDatabasePromise).db(config.name);
         const collections = await db.collections();
         socket.emit(Events.collection.collectionCB(config.ref.id), {
             exists: !!collections.find((a: { collectionName: string; }) => a.collectionName === config.name),

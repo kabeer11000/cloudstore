@@ -42,7 +42,7 @@ export default class CloudStore {
          * Synchronous Config call 
         **/
         if (!this.internals.socket) throw new Error("Socket Doesn't Exist");
-        this.internals.socket.emit("config", {});
+        this.internals.socket.emit("config", {database: this.internals.constructorConfig.database});
         this.internals.socket.on("config-cb", (data: object) => {
             this.internals.connection.connected = true;
             this.internals.connection.remote.config = data;
