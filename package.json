@@ -5,6 +5,16 @@
   "author": "Kabeer's Network Authors",
   "license": "MIT",
   "private": true,
+  "main": "./source/client/build/cjs/index.js",
+  "module": "./source/client/build/esm/index.js",
+  "types": "./source/client/build/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./source/client/build/esm/index.js",
+      "require": "./source/client/build/cjs/index.js",
+      "types": "./source/client/build/esm/index.d.ts"
+    }
+  },
   "workspaces": [
     "source/*",
     "source/backends/*",
