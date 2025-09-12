@@ -21,9 +21,15 @@ io.on("connection", async (socket: { id: any; data: { activeWatchables: Set<unkn
     if ((process.env).ENV === 'development') console.log("a device: ", socket.id, " has connected");
     // ParseExpression();
     socket.data.activeWatchables = new Set();
-    socket.on(Events.config.config(), async () => socket.emit("config-cb", { _s: ServerVersion }));
+    // @ts-ignore
+    socket.on(Events.config.config(), async (config: {database: string}) => {
+        // @ts-ignore
+        socket.data.config = config;
+        socket.emit("config-cb", { _s: ServerVersion });
+    });
     socket.on(Events.collection.collection(), async (config: { name: string, ref: {id: string} }) => {
-        const db = (await MongoDatabasePromise).db(config.name);
+        // @ts-ignore
+        const db = (await MongoDatabasePromise).db(socket.data.config.database);
         const collections = await db.collections();
         socket.emit(Events.collection.collectionCB(config.ref.id), {
             exists: !!collections.find((a: { collectionName: string; }) => a.collectionName === config.name),
