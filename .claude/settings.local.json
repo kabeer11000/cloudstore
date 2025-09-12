@@ -4,7 +4,8 @@
       "Bash(bun:*)",
       "Bash(redis-cli:*)",
       "Bash(curl:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(timeout:*)"
     ],
     "deny": [],
     "ask": []

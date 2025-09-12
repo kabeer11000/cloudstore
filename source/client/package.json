@@ -16,20 +16,21 @@
     }
   },
   "scripts": {
-    "build": "yarn run build:cjs && yarn run build:mjs",
-    "dev": "concurrently \"yarn run run:ts-watch\" \"yarn run run:node-start\"",
+    "build": "bun run build:cjs && bun run build:mjs",
+    "dev": "concurrently \"bun run run:ts-watch\" \"bun run run:node-start\"",
     "run:node-start": "nodemon ./bundled/index.js",
-    "run:ts-watch": "concurrently \"yarn run build:esm\"",
+    "run:ts-watch": "concurrently \"bun run build:esm:watch\"",
     "build:es2015": "tsc --module es2015 --target es2015 --outDir build/es2015 --declaration build/es2015/index.d.ts",
-    "build:esm": "ttsc --watch --module es2015 --target es5 --outDir build/esm --declaration --declarationDir build/esm",
-    "build:cjs": "tsc --module commonjs --target es5 --outDir build/cjs --declaration ./build/cjs/index.d.ts",
+    "build:esm": "bun build src/index.ts --outdir build/esm --format esm --minify",
+    "build:esm:watch": "bun build src/index.ts --outdir build/esm --format esm --minify --watch",
+    "build:cjs": "bun build src/index.ts --outdir build/cjs --format cjs --minify",
     "build:umd": "rollup build/esm/index.js --format umd --name CloudStore --sourceMap --output build/umd/cloudstore.js",
     "build:umd:min": "cd build/umd && uglifyjs --compress --mangle --source-map --screw-ie8 --comments --o cloudstore.min.js -- cloudstore.js && gzip cloudstore.min.js -c > cloudstore.min.js.gz",
-    "build:mjs": "tsc --rootDir src --outDir build/mjs --moduleResolution node --allowSyntheticDefaultImports --module esnext src/*.ts && mv build/mjs/index.js build/mjs/index.mjs",
+    "build:mjs": "bun build src/index.ts --outdir build/mjs --format esm --minify && mv build/mjs/index.js build/mjs/index.mjs",
     "build:cjs2": "tsc --rootDir src --outDir build/cjs --moduleResolution node --esModuleInterop src/*.ts",
     "create:docs": "typedoc",
     "workflow:deploy": "node ./update-documentation.js",
-    "documentation:workflow": "yarn run create:docs && yarn run workflow:deploy"
+    "documentation:workflow": "bun run create:docs && bun run workflow:deploy"
   },
   "dependencies": {
     "@kabeersnetwork/csel": "^1.1.6",

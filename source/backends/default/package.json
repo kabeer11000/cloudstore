@@ -10,9 +10,9 @@
     "access": "public"
   },
   "scripts": {
-    "dev": "concurrently \"yarn run run:ts-watch\" \"yarn run run:node-start\"",
+    "dev": "concurrently \"bun run run:ts-watch\" \"bun run run:node-start\"",
     "run:node-start": "nodemon --inspect ./bundled/index.js",
-    "run:ts-watch": "ttsc --watch",
+    "run:ts-watch": "tsc --watch",
     "run:ts-watch_": "tsc-watch --compiler ./node_modules/.bin/ttsc --onSuccess \"node --inspect-brk ./bundled/index.js\"",
     "copy:assets": "cpy '**/*' '../bundled' --cwd=src",
     "create:docs": "typedoc",

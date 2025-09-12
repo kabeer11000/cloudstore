@@ -6,12 +6,21 @@
   "license": "MIT",
   "private": true,
   "workspaces": [
-    "source/*"
+    "source/*",
+    "source/backends/*",
+    "source/packages/*"
   ],
   "scripts": {
-    "backend:start": "yarn --cwd source/backend dev",
-    "client:build": "yarn --cwd source/client build:esm"
+    "backend:start": "bun --cwd source/backends/default dev",
+    "client:build": "bun --cwd source/client build:esm",
+    "dev": "bun run backend:start",
+    "build": "bun run --filter '*' build",
+    "test": "bun run --filter '*' test",
+    "lint": "bun run --filter '*' lint"
   },
   "devDependencies": {
+    "bun-types": "latest",
+    "ttypescript": "^1.5.15",
+    "typescript": "^5.9.2"
   }
 }

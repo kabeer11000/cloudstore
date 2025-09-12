@@ -14,11 +14,80 @@ Kabeer Cloudstore, also known as Cloudstore, is a powerful real-time database en
 - **Scalability:** Cloudstore is highly scalable and can handle millions of concurrent connections. It supports automatic scaling, so you can easily scale your database as your application grows.
 - **Flexibility:** Cloudstore can be self-hosted, providing flexibility in deployment options. It provides a RESTful API that can be accessed using standard HTTP methods and supports JSON data format.
 
-## Getting Started
+## Development Setup
 
-To get started with Cloudstore, you can download the self-hosted version. The self-hosted version includes easy-to-use installation scripts that can be used to set up your database in minutes.
+This project uses [Bun](https://bun.sh/) workspaces for managing multiple packages. Make sure you have Bun installed before proceeding.
 
-Once you have your database set up, you can start storing and retrieving data in real-time. You can also define custom validation and logic rules using the CSEL-based database rules engine to ensure data consistency and enforce business rules.
+### Installation
+
+```bash
+# Install all dependencies across workspaces
+bun install
+```
+
+### Available Workspaces
+
+- **`@kabeersnetwork/cloudstore`** (`source/client`) - Client SDK and libraries
+- **`@kabeersnetwork/cloudstore-backend`** (`source/backends/default`) - Server backend with MongoDB, Redis, and Socket.io
+- **`@kabeersnetwork/csel`** (`source/packages/csel`) - Cloud Store Expression Language parser
+
+### Common Commands
+
+```bash
+# Start the backend server in development mode
+bun run dev
+
+# Build all workspaces
+bun run build
+
+# Build specific workspace
+bun run --filter "@kabeersnetwork/cloudstore" build
+
+# Run tests across all workspaces
+bun run test
+
+# Run linting across all workspaces
+bun run lint
+```
+
+### Development Workflow
+
+1. **Backend Development**: 
+   ```bash
+   bun run backend:start
+   # or
+   bun run dev
+   ```
+   This starts the server with hot-reload enabled via nodemon and TypeScript watch mode.
+
+2. **Client Development**:
+   ```bash
+   bun --cwd source/client dev
+   ```
+   Builds the client library with watch mode enabled.
+
+3. **Expression Language Development**:
+   ```bash
+   bun --cwd source/packages/csel build
+   ```
+
+### Getting Started with CloudStore
+
+Once you have the development environment set up, you can start the backend server and begin storing and retrieving data in real-time. You can also define custom validation and logic rules using the CSEL-based database rules engine to ensure data consistency and enforce business rules.
+
+## Documentation
+
+### Development Guides
+- **[Workspace Guide](./WORKSPACE_GUIDE.md)** - Comprehensive guide to working with Bun workspaces
+- **[Bun Commands Reference](./BUN_COMMANDS.md)** - Quick reference for all Bun workspace commands
+- **[Client SDK Development](./source/client/DEVELOPMENT.md)** - Client library development guide
+- **[Backend Development](./source/backends/default/DEVELOPMENT.md)** - Server development and API guide
+- **[CSEL Development](./source/packages/csel/DEVELOPMENT.md)** - Expression language development guide
+
+### Architecture
+- **Client SDK** (`@kabeersnetwork/cloudstore`) - TypeScript/JavaScript client library
+- **Backend Server** (`@kabeersnetwork/cloudstore-backend`) - Node.js server with MongoDB/Redis
+- **Expression Language** (`@kabeersnetwork/csel`) - Rules engine and expression evaluator
 
 ## Contributing
 
