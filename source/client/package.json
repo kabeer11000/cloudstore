@@ -12,7 +12,12 @@
   "exports": {
     ".": {
       "import": "./build/esm/index.js",
-      "require": "./build/cjs/index.cjs"
+      "require": "./build/cjs/index.cjs",
+      "types": "./build/esm/index.d.ts"
+    },
+    "./adapters": {
+      "import": "./build/esm/adapters.js",
+      "require": "./build/cjs/adapters.cjs"
     }
   },
   "scripts": {
