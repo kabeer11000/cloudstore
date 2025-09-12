@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,14 +19,47 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FilterOperatorToMongoDBMap = void 0;
-const mongo_client_1 = __importDefault(require("../db-internals/mongo-client"));
-const events_1 = __importDefault(require("../events"));
-const rules_1 = require("../auth/rules");
+exports.default = WatchController;
+var mongo_client_1 = require("@/db/mongo-client");
+var events_1 = require("@/events");
 exports.FilterOperatorToMongoDBMap = {
     "EQUAL": "$eq",
     "GREATER": "$gt",
@@ -24,41 +68,69 @@ exports.FilterOperatorToMongoDBMap = {
     "LESSER_EQUAL": "$lte",
 };
 function WatchController(socket, config) {
-    var _a;
-    return __awaiter(this, void 0, void 0, function* () {
-        const db = yield mongo_client_1.default;
-        const stream = db.collection(config.watchable.collection.name).watch([]);
-        const filters = config.watchable.query.structured.where.map(filter => ({
-            [filter.field]: {
-                [exports.FilterOperatorToMongoDBMap[filter.op]]: filter.value
+    return __awaiter(this, void 0, void 0, function () {
+        var db, stream, filters, activeWatchable, _a, _b, _c;
+        var _d;
+        var _this = this;
+        return __generator(this, function (_e) {
+            switch (_e.label) {
+                case 0: return [4, mongo_client_1.default];
+                case 1:
+                    db = _e.sent();
+                    stream = db.collection(config.watchable.collection.name).watch([]);
+                    filters = config.watchable.query.structured.where.map(function (filter) {
+                        var _a, _b;
+                        return (_a = {},
+                            _a[filter.field] = (_b = {},
+                                _b[exports.FilterOperatorToMongoDBMap[filter.op]] = filter.value,
+                                _b),
+                            _a);
+                    });
+                    stream.on("change", function (data) { return __awaiter(_this, void 0, void 0, function () {
+                        var _a, _b, _c;
+                        var _d;
+                        return __generator(this, function (_e) {
+                            switch (_e.label) {
+                                case 0:
+                                    _b = (_a = socket).emit;
+                                    _c = [events_1.default.server.WATCH_CALLBACK(config.stream.id)];
+                                    _d = {};
+                                    return [4, db.collection(config.watchable.collection.name).find(filters.length ? { $and: __spreadArray([], filters, true) } : {}).toArray()];
+                                case 1: return [2, _b.apply(_a, _c.concat([(_d.collection = _e.sent(), _d._update = data, _d)]))];
+                            }
+                        });
+                    }); });
+                    activeWatchable = {
+                        database: {
+                            name: db.databaseName,
+                            version: config.watchable.database.version,
+                        },
+                        stream: {
+                            id: config.stream.id,
+                            active: !!1,
+                            paused: !!0,
+                            resumeToken: stream.resumeToken
+                        },
+                        collection: {
+                            name: config.watchable.collection.name,
+                        }
+                    };
+                    socket.data.activeWatchables.add(config.stream.id, activeWatchable);
+                    stream.once("resumeTokenChanged", function (token) { return socket.data.activeWatchables.add(config.stream.id, __assign(__assign({}, activeWatchable), { stream: __assign(__assign({}, activeWatchable.stream), { resumeToken: token }) })); });
+                    socket.on("watch:".concat(config.stream.id, ":close"), function (config) {
+                        stream.close();
+                        socket.data.activeWatchables.remove(config.stream.id);
+                        socket.removeListener("watch:".concat(config.stream.id, ":close"), function () { return socket.emit("closed-stream:" + config.stream.id); });
+                    });
+                    _b = (_a = socket).emit;
+                    _c = [events_1.default.server.WATCH_CALLBACK(config.stream.id)];
+                    _d = {};
+                    return [4, db.collection(config.watchable.collection.name).find(filters.length ? { $and: __spreadArray([], filters, true) } : {}).toArray()];
+                case 2:
+                    _b.apply(_a, _c.concat([(_d.collection = _e.sent(), _d._update = {}, _d)]));
+                    return [2];
             }
-        }));
-        const databaseRules = (_a = (yield (0, rules_1.ParseRules)())) === null || _a === void 0 ? void 0 : _a.databases.find(({ name }) => { var _a; return (_a = name === "cloudstore-demo") !== null && _a !== void 0 ? _a : config.watchable.database.name; });
-        stream.on("change", (data) => __awaiter(this, void 0, void 0, function* () { return socket.emit(events_1.default.server.WATCH_CALLBACK(config.stream.id), { collection: yield db.collection(config.watchable.collection.name).find(filters.length ? { $and: [...filters] } : {}).toArray(), _update: data }); }));
-        const activeWatchable = {
-            database: {
-                name: db.databaseName,
-                version: config.watchable.database.version,
-            },
-            stream: {
-                id: config.stream.id,
-                active: !!1,
-                paused: !!0,
-                resumeToken: stream.resumeToken
-            },
-            collection: {
-                name: config.watchable.collection.name,
-            }
-        };
-        socket.data.activeWatchables.add(config.stream.id, activeWatchable);
-        stream.once("resumeTokenChanged", token => socket.data.activeWatchables.add(config.stream.id, Object.assign(Object.assign({}, activeWatchable), { stream: Object.assign(Object.assign({}, activeWatchable.stream), { resumeToken: token }) })));
-        socket.on(`watch:${config.stream.id}:close`, (config) => {
-            stream.close();
-            socket.data.activeWatchables.remove(config.stream.id);
-            socket.removeListener(`watch:${config.stream.id}:close`, () => socket.emit("closed-stream:" + config.stream.id));
         });
-        socket.emit(events_1.default.server.WATCH_CALLBACK(config.stream.id), { collection: yield db.collection(config.watchable.collection.name).find(filters.length ? { $and: [...filters] } : {}).toArray(), _update: {} });
     });
 }
-exports.default = WatchController;
 //# sourceMappingURL=watch.js.map

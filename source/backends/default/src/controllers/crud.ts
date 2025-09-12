@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { IDeleteConfig, IInsertConfig, IUpdateConfig } from "@/types";
+import { IDeleteConfig, IInsertConfig, IUpdateConfig, IGetConfig } from "@/types";
 import MongoDatabasePromise from "@/db/mongo-client";
 import { Document, UpdateResult } from "mongodb";
 
@@ -13,7 +13,7 @@ const FilterOperatorToMongoDBMap = {
 }
 
 export async function UpdateHandler(socket: Socket<any, any>, config: IUpdateConfig) {
-    const db = await MongoDatabasePromise;
+    const db = (await MongoDatabasePromise).db(config.updatable.database.name);
     let actionOutPut: UpdateResult | undefined | Document;
     if (config.updatable.type === "kn.cloudstore.collection") actionOutPut = await db.collection(config.updatable.collection.name).updateMany({
         $and: config.updatable.query.structured.where
@@ -29,7 +29,7 @@ export async function DeleteHandler(socket: Socket<any, any>, config: IDeleteCon
         reason: "Document Id wasn't present",
         requestConfig: config
     });
-    const db = await MongoDatabasePromise;
+    const db = (await MongoDatabasePromise).db(config.database.name);
     const filters = config.query.structured.where.map(filter => ({
         [filter.field]: {
             // @ts-ignore
@@ -48,7 +48,7 @@ export async function GetHandler(socket: Socket<any, any>, config: IGetConfig) {
         reason: "Document Id wasn't present",
         requestConfig: config
     });
-    const db = await MongoDatabasePromise;
+    const db = (await MongoDatabasePromise).db(config.database.name);
     const filters = config.query.structured.where.map(filter => ({
         [filter.field]: {
             // @ts-ignore
@@ -63,7 +63,7 @@ export async function GetHandler(socket: Socket<any, any>, config: IGetConfig) {
 
 export async function InsertHandler(socket: Socket<any, any>, config: IInsertConfig) {
     /** Insertions can only be arrays, so for a single document, the array will contain one element **/
-    const db = await MongoDatabasePromise;
+    const db = (await MongoDatabasePromise).db(config.database.name);
     if (!config || !config.ref) {
         socket.emit("insert-cb-" + config.ref.id, { status: false, _insertion: null, error: new Error('Config invalid, event ref not attached') });
         return console.log("insert failed: ", config);

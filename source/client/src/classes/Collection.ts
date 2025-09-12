@@ -59,6 +59,30 @@ export default class Collection {
             });
         });
     }
+    
+    protected update(data: object) {
+        const ref = v4();
+        return new Promise((resolve, reject) => {
+            this.internals.socket?.on("update-cb-" + ref, ({status, ...data}: {status: boolean}) => {
+                status ? resolve(data) : reject(data);
+                this.internals.socket?.removeListener("update-cb-" + ref);
+            });
+            this.internals.socket?.emit("update", {
+                type: "kn.cloudstore.document",
+                database: {
+                    name: this.internals.database.name,
+                },
+                collection: {
+                    name: this.internals.collection.name,
+                },
+                ref: {
+                    id: ref
+                },
+                options: {},
+                insertions: [{data}]
+            });
+        });
+    }
     protected insert(data: object) {
         const ref = v4();
         return new Promise((resolve, reject) => {

@@ -1,4 +1,5 @@
 import { MongoClient } from "mongodb";
 
-const MongoDatabasePromise = MongoClient.connect(import.meta.env.MONGO_URI).then(dbs => dbs.db("cloudstore-demo"));
-export default MongoDatabasePromise;
+console.log('MongoURI:', (process.env.MONGODB_URI))
+const MongoDatabasePromise = MongoClient.connect((process.env).MONGODB_URI);
+export default MongoDatabasePromise; 

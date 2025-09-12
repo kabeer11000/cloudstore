@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SELLexer = exports.Tokens = exports.RParen = exports.LParen = exports.GreaterEqual = exports.LesserEqual = exports.Identifier = exports.False = exports.True = exports.Booleans = exports.Subtraction = exports.Addition = exports.AdditiveOperators = exports.LessThan = exports.GreaterThan = exports.StrictEqual = exports.ComparisonOperators = exports.WhiteSpace = exports.NumberLiteral = exports.StringLiteral = exports.Null = exports.DotAccessor = exports.Variable = void 0;
-const chevrotain_1 = require("chevrotain");
-const index = {
+var chevrotain_1 = require("chevrotain");
+var index = {
     "kn.sel.variable": "kn.sel.variable"
 };
 exports.Variable = (0, chevrotain_1.createToken)({

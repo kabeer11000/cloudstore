@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = {
     authenticate: {
-        authenticate: () => "authenticate",
-        authenticationCB: (id) => `authenticate-cb-${id}`,
+        authenticate: function () { return "authenticate"; },
+        authenticationCB: function (id) { return "authenticate-cb-".concat(id); },
     },
     client: {
         CONFIG: "config",
@@ -11,30 +11,30 @@ exports.default = {
         WATCH: "watch"
     },
     config: {
-        config: () => `config`,
-        configCB: (id) => `config-cb-${id}`
+        config: function () { return "config"; },
+        configCB: function (id) { return "config-cb-".concat(id); }
     },
     insert: {
-        insert: () => "insert",
-        insertCB: (id) => `insert-cb-${id}`,
+        insert: function () { return "insert"; },
+        insertCB: function (id) { return "insert-cb-".concat(id); },
     },
     remove: {
-        remove: () => "remove",
-        removeCB: (id) => `remove-cb-${id}`,
+        remove: function () { return "remove"; },
+        removeCB: function (id) { return "remove-cb-".concat(id); },
     },
     watch: {
-        watch: () => `watch`,
-        watchCB: (id) => `watchable-change-${id}`,
-        watchError: (id) => `watchable-error-${id}`
+        watch: function () { return "watch"; },
+        watchCB: function (id) { return "watchable-change-".concat(id); },
+        watchError: function (id) { return "watchable-error-".concat(id); }
     },
     collection: {
-        collection: () => `collection`,
-        collectionCB: (id) => `collection-cb-${id}`,
+        collection: function () { return "collection"; },
+        collectionCB: function (id) { return "collection-cb-".concat(id); },
     },
     server: {
         CONFIG_CALLBACK: "config-cb",
         INSERT_QUERY_CALLBACK: "insert-cb",
-        WATCH_CALLBACK: (id) => "watchable-change-" + id
+        WATCH_CALLBACK: function (id) { return "watchable-change-" + id; }
     }
 };
 //# sourceMappingURL=events.js.map

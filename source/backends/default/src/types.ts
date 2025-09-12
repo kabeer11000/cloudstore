@@ -44,6 +44,9 @@ export interface IWatchConfig {
 export interface IUpdateConfig {
     updatable: {
         type: "kn.cloudstore.collection" | "kn.cloudstore.document", // collection.find vs collection.findOne
+        ref: {
+            id: string
+        },
         database: {
             name: string,
             version?: string

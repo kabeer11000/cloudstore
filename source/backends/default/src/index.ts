@@ -11,21 +11,21 @@ import { IWatchConfig, IUpdateConfig, IDeleteConfig, IInsertConfig } from "@/typ
 require("dotenv").config({});
 const io = new Server(8080, {
     cors: {
-        origin: "http://127.0.0.1:5173",
+        origin: "http://localhost:5173",
         methods: ["GET", "POST"]
     }
 });
 
 io.use(Authorization);
 io.on("connection", async (socket: { id: any; data: { activeWatchables: Set<unknown>; }; on: (arg0: string, arg1: { (): any; (config: { name: string; streamId: string; }): Promise<void>; (d: any): Promise<void>; (d: any): Promise<void>; (d: any): Promise<any>; (d: any): Promise<void>; }) => void; emit: (arg0: string, arg1: { _s?: string; exists?: boolean; name?: string; }) => void; }) => {
-    if ((import.meta.env ?? process.env).ENV === 'development') console.log("a device: ", socket.id, " has connected");
+    if ((process.env).ENV === 'development') console.log("a device: ", socket.id, " has connected");
     // ParseExpression();
     socket.data.activeWatchables = new Set();
     socket.on(Events.config.config(), async () => socket.emit("config-cb", { _s: ServerVersion }));
-    socket.on(Events.collection.collection(), async (config: { name: string, streamId: string }) => {
+    socket.on(Events.collection.collection(), async (config: { name: string, ref: {id: string} }) => {
         const db = await MongoDatabasePromise;
         const collections = await db.collections();
-        socket.emit(Events.collection.collectionCB(config.streamId), {
+        socket.emit(Events.collection.collectionCB(config.ref.id), {
             exists: !!collections.find((a: { collectionName: string; }) => a.collectionName === config.name),
             name: config.name,
         });
@@ -38,5 +38,9 @@ io.on("connection", async (socket: { id: any; data: { activeWatchables: Set<unkn
     socket.on("delete", (d: IDeleteConfig) => DeleteHandler(socket, d))
     // Implements insert insertion-error and insert-cb-[REF_ID]
     socket.on("insert", (d: IInsertConfig) => InsertHandler(socket, d))
+});
+
+io.on('disconnect', (reason) => {
+    console.log(`client disconnected: ${reason}`);
 });
 console.log("socket server started on port http://localhost:8080/")

@@ -1,5 +1,5 @@
-export declare type IFilterOperations = "EQUAL" | "GREATER" | "LESSER" | "GREATER_EQUAL" | "LESSER_EQUAL" | "ARRAY.IN" | "ARRAY.NOT_IN";
-export declare type IOrderByDirections = "ASCENDING" | "DESCENDING";
+export type IFilterOperations = "EQUAL" | "GREATER" | "LESSER" | "GREATER_EQUAL" | "LESSER_EQUAL" | "ARRAY.IN" | "ARRAY.NOT_IN";
+export type IOrderByDirections = "ASCENDING" | "DESCENDING";
 export interface IWatchConfig {
     stream: {
         id: string;

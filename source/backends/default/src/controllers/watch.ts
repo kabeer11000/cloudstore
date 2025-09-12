@@ -12,7 +12,7 @@ export const FilterOperatorToMongoDBMap = {
     // Non Exhaustive
 }
 export default async function WatchController(socket: Socket<any, any>, config: IWatchConfig) {
-    const db = await MongoDatabasePromise;
+    const db = (await MongoDatabasePromise).db(config.watchable.database.name);
     const stream = db.collection(config.watchable.collection.name).watch([]);
     const filters = config.watchable.query.structured.where.map(filter => ({
         [filter.field]: {
