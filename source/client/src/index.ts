@@ -30,7 +30,7 @@ export default class CloudStore {
                 authorization: `Bearer ${config.server.access.key}`
             },
             query: {
-                id: config.server.access.key
+                tenant_id: config.server.access.key
             }
         });
         this.internals.constructorConfig = config;
@@ -42,7 +42,7 @@ export default class CloudStore {
          * Synchronous Config call 
         **/
         if (!this.internals.socket) throw new Error("Socket Doesn't Exist");
-        this.internals.socket.emit("config", { database: this.internals.constructorConfig.database });
+        this.internals.socket.emit("config", { database: this.internals.constructorConfig.database.name });
         this.internals.socket.on("config-cb", (data: object) => {
             this.internals.connection.connected = true;
             this.internals.connection.remote.config = data;
@@ -58,8 +58,7 @@ export default class CloudStore {
             this.internals.socket?.emit(eventName, data);
         });
     }
-    // @ts-ignore
-    public get query() {
+    public get query(): QueryBuilder {
         const id = v4();
         const query = new QueryBuilder(id)
         this.internals.contexts[id] = query;
@@ -79,15 +78,14 @@ export default class CloudStore {
                 id: ref
             }
         });
-        if (!this.internals.socket || !this.internals.constructorConfig?.database) return;
+        if (!this.internals.socket || !this.internals.constructorConfig?.database) return undefined;
         return new Collection({
             database: this.internals.constructorConfig.database,
             collection: { exists: true, name: name },
             socket: this.internals.socket
         });
     }
-    // @ts-ignore
-    public get info() {
+    public get info(): IInternalState {
         return this.internals;
     }
 }

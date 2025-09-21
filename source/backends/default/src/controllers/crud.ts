@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
 import { IDeleteConfig, IInsertConfig, IUpdateConfig, IGetConfig } from "@/types";
-import MongoDatabasePromise from "@/db/mongo-client";
+import MongoDatabasePromise from "@/db-internals/mongo-client";
 import { Document, UpdateResult } from "mongodb";
 
 const FilterOperatorToMongoDBMap = {
@@ -9,71 +9,97 @@ const FilterOperatorToMongoDBMap = {
     "LESSER": "$lt",
     "GREATER_EQUAL": "$gte",
     "LESSER_EQUAL": "$lte",
-    // Non Exhaustive
+    "ARRAY.IN": "$in",
+    "ARRAY.NOT_IN": "$nin"
 }
 
 export async function UpdateHandler(socket: Socket<any, any>, config: IUpdateConfig) {
-    const db = (await MongoDatabasePromise).db(config.updatable.database.name);
-    let actionOutPut: UpdateResult | undefined | Document;
-    if (config.updatable.type === "kn.cloudstore.collection") actionOutPut = await db.collection(config.updatable.collection.name).updateMany({
-        $and: config.updatable.query.structured.where
-    }, config.updatable.query.structured.update.data) // $lt, $le, and all atomic operators work out of the box
-    if (config.updatable.type === "kn.cloudstore.document") actionOutPut = await db.collection(config.updatable.collection.name).updateOne({
-        $and: config.updatable.query.structured.where
-    }, config.updatable.query.structured.update.data) // $lt, $le, and all atomic operators work out of the box
-    socket.emit("update-cb", { status: true, ...actionOutPut });
+    try {
+        const db = (await MongoDatabasePromise).db(config.updatable.database.name);
+        const filters = config.updatable.query.structured.where.map(filter => ({
+            [filter.field]: {
+                [FilterOperatorToMongoDBMap[filter.op as keyof typeof FilterOperatorToMongoDBMap]]: filter.value
+            }
+        }));
+
+        let actionOutPut: UpdateResult | undefined | Document;
+        const query = filters.length ? { $and: filters } : {};
+        const updateData = { $set: config.updatable.query.structured.update.data };
+
+        if (config.updatable.type === "kn.cloudstore.collection") {
+            actionOutPut = await db.collection(config.updatable.collection.name).updateMany(query, updateData);
+        } else if (config.updatable.type === "kn.cloudstore.document") {
+            actionOutPut = await db.collection(config.updatable.collection.name).updateOne(query, updateData);
+        }
+
+        socket.emit("update-cb-" + config.updatable.ref.id, { status: true, result: actionOutPut });
+    } catch (error) {
+        socket.emit("update-cb-" + config.updatable.ref.id, { status: false, error: error.message });
+    }
 }
 
 export async function DeleteHandler(socket: Socket<any, any>, config: IDeleteConfig) {
-    if (config.type === "kn.cloudstore.document" && !config.document?.id) return socket.emit("deletion-error-" + config.ref.id, {
-        reason: "Document Id wasn't present",
-        requestConfig: config
-    });
-    const db = (await MongoDatabasePromise).db(config.database.name);
-    const filters = config.query.structured.where.map(filter => ({
-        [filter.field]: {
-            // @ts-ignore
-            [FilterOperatorToMongoDBMap[filter.op]]: filter.value
+    try {
+        const db = (await MongoDatabasePromise).db(config.database.name);
+        const filters = config.query.structured.where.map(filter => ({
+            [filter.field]: {
+                [FilterOperatorToMongoDBMap[filter.op as keyof typeof FilterOperatorToMongoDBMap]]: filter.value
+            }
+        }));
+
+        let deletionOutPut;
+        const query = filters.length ? { $and: filters } : {};
+
+        if (config.type === "kn.cloudstore.document") {
+            deletionOutPut = await db.collection(config.collection.name).deleteOne(query);
+        } else if (config.type === "kn.cloudstore.document:array") {
+            deletionOutPut = await db.collection(config.collection.name).deleteMany(query);
         }
-    }))
-    let deletionOutPut;
-    if (config.type === "kn.cloudstore.document") deletionOutPut = await db.collection(config.collection.name).deleteOne(filters.length ? { $and: filters } : {});
-    if (config.type === "kn.cloudstore.document:array") deletionOutPut = await db.collection(config.collection.name).deleteMany(filters.length ? { $and: filters } : {});
-    socket.emit("delete-cb-" + config.ref.id, { status: true, _deletion: deletionOutPut, filters: filters });
+
+        socket.emit("delete-cb-" + config.ref.id, { status: true, result: deletionOutPut });
+    } catch (error) {
+        socket.emit("delete-cb-" + config.ref.id, { status: false, error: error.message });
+    }
 }
 
 
 export async function GetHandler(socket: Socket<any, any>, config: IGetConfig) {
-    if (config.type === "kn.cloudstore.document" && !config.document?.id) return socket.emit("get-error-" + config.ref.id, {
-        reason: "Document Id wasn't present",
-        requestConfig: config
-    });
-    const db = (await MongoDatabasePromise).db(config.database.name);
-    const filters = config.query.structured.where.map(filter => ({
-        [filter.field]: {
-            // @ts-ignore
-            [FilterOperatorToMongoDBMap[filter.op]]: filter.value
+    try {
+        const db = (await MongoDatabasePromise).db(config.database.name);
+        const filters = config.query.structured.where.map(filter => ({
+            [filter.field]: {
+                [FilterOperatorToMongoDBMap[filter.op as keyof typeof FilterOperatorToMongoDBMap]]: filter.value
+            }
+        }));
+
+        let result;
+        const query = filters.length ? { $and: filters } : {};
+
+        if (config.type === "kn.cloudstore.document") {
+            result = await db.collection(config.collection.name).findOne(query);
+        } else if (config.type === "kn.cloudstore.document:array") {
+            result = await db.collection(config.collection.name).find(query).toArray();
         }
-    }))
-    let deletionOutPut;
-    if (config.type === "kn.cloudstore.document") deletionOutPut = await db.collection(config.collection.name).deleteOne(filters.length ? { $and: filters } : {});
-    if (config.type === "kn.cloudstore.document:array") deletionOutPut = await db.collection(config.collection.name).deleteMany(filters.length ? { $and: filters } : {});
-    socket.emit("get-cb-" + config.ref.id, { status: true, _deletion: deletionOutPut, filters: filters });
+
+        socket.emit("get-cb-" + config.ref.id, { status: true, data: result });
+    } catch (error) {
+        socket.emit("get-cb-" + config.ref.id, { status: false, error: error.message });
+    }
 }
 
 export async function InsertHandler(socket: Socket<any, any>, config: IInsertConfig) {
-    /** Insertions can only be arrays, so for a single document, the array will contain one element **/
-    const db = (await MongoDatabasePromise).db(config.database.name);
-    if (!config || !config.ref) {
-        socket.emit("insert-cb-" + config.ref.id, { status: false, _insertion: null, error: new Error('Config invalid, event ref not attached') });
-        return console.log("insert failed: ", config);
-    }
     try {
-        console.log("insert requested");
-        const insertionOutPut = await db.collection(config.collection.name).insertMany(config.insertions.map(({ data }) => data), {});
-        socket.emit("insert-cb-" + config.ref.id, { status: true, _insertion: insertionOutPut });
-    } catch (e) {
-        socket.emit("insert-cb-" + config.ref.id, { status: false, _insertion: null, error: e })
-        console.log("insert write error");
+        if (!config || !config.ref) {
+            socket.emit("insert-cb-" + config.ref.id, { status: false, error: 'Config invalid, event ref not attached' });
+            return;
+        }
+
+        const db = (await MongoDatabasePromise).db(config.database.name);
+        const documents = config.insertions.map(({ data }) => data);
+
+        const insertionOutPut = await db.collection(config.collection.name).insertMany(documents, {});
+        socket.emit("insert-cb-" + config.ref.id, { status: true, result: insertionOutPut });
+    } catch (error) {
+        socket.emit("insert-cb-" + config.ref.id, { status: false, error: error.message });
     }
 }

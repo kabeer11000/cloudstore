@@ -1,9 +1,9 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = {
+exports.__esModule = true;
+exports["default"] = {
     authenticate: {
         authenticate: function () { return "authenticate"; },
-        authenticationCB: function (id) { return "authenticate-cb-".concat(id); },
+        authenticationCB: function (id) { return "authenticate-cb-".concat(id); }
     },
     client: {
         CONFIG: "config",
@@ -16,11 +16,11 @@ exports.default = {
     },
     insert: {
         insert: function () { return "insert"; },
-        insertCB: function (id) { return "insert-cb-".concat(id); },
+        insertCB: function (id) { return "insert-cb-".concat(id); }
     },
     remove: {
         remove: function () { return "remove"; },
-        removeCB: function (id) { return "remove-cb-".concat(id); },
+        removeCB: function (id) { return "remove-cb-".concat(id); }
     },
     watch: {
         watch: function () { return "watch"; },
@@ -29,7 +29,7 @@ exports.default = {
     },
     collection: {
         collection: function () { return "collection"; },
-        collectionCB: function (id) { return "collection-cb-".concat(id); },
+        collectionCB: function (id) { return "collection-cb-".concat(id); }
     },
     server: {
         CONFIG_CALLBACK: "config-cb",

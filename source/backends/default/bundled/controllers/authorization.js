@@ -9,8 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
-    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
@@ -35,30 +35,33 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.Authorization = void 0;
 var jwt = require("jsonwebtoken");
 var redis_client_1 = require("@/db/redis-client");
 var Authorization = function (socket, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var tenantPublicKey, decoded;
+    var tenantPublicKeyResult, tenantPublicKey, decoded;
     var _a;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 if (!socket.handshake.headers['authorization'])
                     return [2, next(new Error('error, authorization header not attached.'))];
-                if (!socket.handshake.query.id)
-                    return [2, next(new Error('error, client id was not attached.'))];
+                if (!socket.handshake.query.tenant_id)
+                    return [2, next(new Error('error, tenant id was not attached.'))];
                 if (!((_a = socket.handshake.headers['authorization'].split(' ')[1]) === null || _a === void 0 ? void 0 : _a.length))
                     return [2, next(new Error('error, Bearer token was not attached.'))];
-                return [4, redis_client_1.default];
-            case 1: return [4, (_b.sent()).get(socket.handshake.query.id.toString())];
+                return [4, redis_client_1["default"]];
+            case 1: return [4, (_b.sent()).get(socket.handshake.query.tenant_id.toString())];
             case 2:
-                tenantPublicKey = _b.sent();
-                if (!tenantPublicKey)
+                tenantPublicKeyResult = _b.sent();
+                if (!tenantPublicKeyResult)
                     return [2, next(new Error('error, Tenant is not registered! Kindly make sure [tenant_id, publicKey] is added to the Redis instance.'))];
+                tenantPublicKey = tenantPublicKeyResult.toString().replace(/\\n/g, '\n');
                 try {
-                    decoded = jwt.verify(socket.handshake.headers['authorization'].split(' ')[1], tenantPublicKey);
+                    decoded = jwt.verify(socket.handshake.headers['authorization'].split(' ')[1], tenantPublicKey, {
+                        algorithms: ['ES256']
+                    });
                     socket.auth = socket.auth || {};
                     socket.auth.verified = true;
                     socket.auth.data = decoded;
@@ -72,5 +75,5 @@ var Authorization = function (socket, next) { return __awaiter(void 0, void 0, v
     });
 }); };
 exports.Authorization = Authorization;
-exports.default = exports.Authorization;
+exports["default"] = exports.Authorization;
 //# sourceMappingURL=authorization.js.map

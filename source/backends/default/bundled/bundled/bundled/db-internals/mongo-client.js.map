@@ -1,1 +1,0 @@
-{"version":3,"file":"mongo-client.js","sourceRoot":"","sources":["../../../../src/bundled/bundled/db-internals/mongo-client.ts"],"names":[],"mappings":";;AAAA,qCAAoC;AAEpC,MAAM,oBAAoB,GAAG,qBAAW,CAAC,OAAO,CAAC,2BAA2B,CAAC,CAAC,IAAI,CAAC,GAAG,CAAC,EAAE,CAAC,GAAG,CAAC,EAAE,CAAC,iBAAiB,CAAC,CAAC,CAAC;AACrH,kBAAe,oBAAoB,CAAC"}

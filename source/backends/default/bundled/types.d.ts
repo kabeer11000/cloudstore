@@ -35,6 +35,9 @@ export interface IWatchConfig {
 export interface IUpdateConfig {
     updatable: {
         type: "kn.cloudstore.collection" | "kn.cloudstore.document";
+        ref: {
+            id: string;
+        };
         database: {
             name: string;
             version?: string;
@@ -91,6 +94,34 @@ export interface IActiveWatchable {
     };
     document?: {
         id: string;
+    };
+}
+export interface IGetConfig {
+    type: "kn.cloudstore.document:array" | "kn.cloudstore.document";
+    database: {
+        name: string;
+        version?: string;
+    };
+    ref: {
+        id: string;
+    };
+    collection: {
+        name: string;
+    };
+    document?: {
+        id: string;
+    };
+    query: {
+        structured: {
+            from: {
+                collection: string;
+            };
+            where: Array<{
+                "field": string;
+                "op": IFilterOperations;
+                "value": string | object;
+            }>;
+        };
     };
 }
 export interface IDeleteConfig {

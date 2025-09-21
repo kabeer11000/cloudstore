@@ -20,8 +20,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
-    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
@@ -55,10 +55,9 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     }
     return to.concat(ar || Array.prototype.slice.call(from));
 };
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.FilterOperatorToMongoDBMap = void 0;
-exports.default = WatchController;
-var mongo_client_1 = require("@/db/mongo-client");
+var mongo_client_1 = require("@/db-internals/mongo-client");
 var events_1 = require("@/events");
 exports.FilterOperatorToMongoDBMap = {
     "EQUAL": "$eq",
@@ -66,19 +65,22 @@ exports.FilterOperatorToMongoDBMap = {
     "LESSER": "$lt",
     "GREATER_EQUAL": "$gte",
     "LESSER_EQUAL": "$lte",
+    "ARRAY.IN": "$in",
+    "ARRAY.NOT_IN": "$nin"
 };
 function WatchController(socket, config) {
     return __awaiter(this, void 0, void 0, function () {
-        var db, stream, filters, activeWatchable, _a, _b, _c;
-        var _d;
+        var db_1, stream_1, filters_1, activeWatchable_1, closeHandler_1, initialData, error_1;
         var _this = this;
-        return __generator(this, function (_e) {
-            switch (_e.label) {
-                case 0: return [4, mongo_client_1.default];
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 3, , 4]);
+                    return [4, mongo_client_1["default"]];
                 case 1:
-                    db = _e.sent();
-                    stream = db.collection(config.watchable.collection.name).watch([]);
-                    filters = config.watchable.query.structured.where.map(function (filter) {
+                    db_1 = (_a.sent()).db(config.watchable.database.name);
+                    stream_1 = db_1.collection(config.watchable.collection.name).watch([]);
+                    filters_1 = config.watchable.query.structured.where.map(function (filter) {
                         var _a, _b;
                         return (_a = {},
                             _a[filter.field] = (_b = {},
@@ -86,51 +88,83 @@ function WatchController(socket, config) {
                                 _b),
                             _a);
                     });
-                    stream.on("change", function (data) { return __awaiter(_this, void 0, void 0, function () {
-                        var _a, _b, _c;
-                        var _d;
-                        return __generator(this, function (_e) {
-                            switch (_e.label) {
+                    if (!socket.data.activeWatchables) {
+                        socket.data.activeWatchables = new Map();
+                    }
+                    stream_1.on("change", function (data) { return __awaiter(_this, void 0, void 0, function () {
+                        var collection, error_2;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
                                 case 0:
-                                    _b = (_a = socket).emit;
-                                    _c = [events_1.default.server.WATCH_CALLBACK(config.stream.id)];
-                                    _d = {};
-                                    return [4, db.collection(config.watchable.collection.name).find(filters.length ? { $and: __spreadArray([], filters, true) } : {}).toArray()];
-                                case 1: return [2, _b.apply(_a, _c.concat([(_d.collection = _e.sent(), _d._update = data, _d)]))];
+                                    _a.trys.push([0, 2, , 3]);
+                                    return [4, db_1.collection(config.watchable.collection.name)
+                                            .find(filters_1.length ? { $and: __spreadArray([], filters_1, true) } : {})
+                                            .toArray()];
+                                case 1:
+                                    collection = _a.sent();
+                                    socket.emit(events_1["default"].server.WATCH_CALLBACK(config.stream.id), {
+                                        collection: collection,
+                                        _update: data
+                                    });
+                                    return [3, 3];
+                                case 2:
+                                    error_2 = _a.sent();
+                                    socket.emit(events_1["default"].watch.watchError(config.stream.id), { error: error_2.message });
+                                    return [3, 3];
+                                case 3: return [2];
                             }
                         });
                     }); });
-                    activeWatchable = {
+                    activeWatchable_1 = {
                         database: {
-                            name: db.databaseName,
-                            version: config.watchable.database.version,
+                            name: db_1.databaseName,
+                            version: config.watchable.database.version
                         },
                         stream: {
                             id: config.stream.id,
-                            active: !!1,
-                            paused: !!0,
-                            resumeToken: stream.resumeToken
+                            active: true,
+                            paused: false,
+                            resumeToken: stream_1.resumeToken
                         },
                         collection: {
-                            name: config.watchable.collection.name,
+                            name: config.watchable.collection.name
                         }
                     };
-                    socket.data.activeWatchables.add(config.stream.id, activeWatchable);
-                    stream.once("resumeTokenChanged", function (token) { return socket.data.activeWatchables.add(config.stream.id, __assign(__assign({}, activeWatchable), { stream: __assign(__assign({}, activeWatchable.stream), { resumeToken: token }) })); });
-                    socket.on("watch:".concat(config.stream.id, ":close"), function (config) {
-                        stream.close();
-                        socket.data.activeWatchables.remove(config.stream.id);
-                        socket.removeListener("watch:".concat(config.stream.id, ":close"), function () { return socket.emit("closed-stream:" + config.stream.id); });
+                    socket.data.activeWatchables.set(config.stream.id, activeWatchable_1);
+                    stream_1.once("resumeTokenChanged", function (token) {
+                        var updated = __assign(__assign({}, activeWatchable_1), { stream: __assign(__assign({}, activeWatchable_1.stream), { resumeToken: token }) });
+                        socket.data.activeWatchables.set(config.stream.id, updated);
                     });
-                    _b = (_a = socket).emit;
-                    _c = [events_1.default.server.WATCH_CALLBACK(config.stream.id)];
-                    _d = {};
-                    return [4, db.collection(config.watchable.collection.name).find(filters.length ? { $and: __spreadArray([], filters, true) } : {}).toArray()];
+                    closeHandler_1 = function (closeConfig) {
+                        try {
+                            stream_1.close();
+                            socket.data.activeWatchables["delete"](closeConfig.stream.id);
+                            socket.removeListener("watch:".concat(closeConfig.stream.id, ":close"), closeHandler_1);
+                            socket.emit("closed-stream:" + closeConfig.stream.id, { success: true });
+                        }
+                        catch (error) {
+                            socket.emit("closed-stream:" + closeConfig.stream.id, { success: false, error: error.message });
+                        }
+                    };
+                    socket.on("watch:".concat(config.stream.id, ":close"), closeHandler_1);
+                    return [4, db_1.collection(config.watchable.collection.name)
+                            .find(filters_1.length ? { $and: __spreadArray([], filters_1, true) } : {})
+                            .toArray()];
                 case 2:
-                    _b.apply(_a, _c.concat([(_d.collection = _e.sent(), _d._update = {}, _d)]));
-                    return [2];
+                    initialData = _a.sent();
+                    socket.emit(events_1["default"].server.WATCH_CALLBACK(config.stream.id), {
+                        collection: initialData,
+                        _update: { operationType: 'initial' }
+                    });
+                    return [3, 4];
+                case 3:
+                    error_1 = _a.sent();
+                    socket.emit(events_1["default"].watch.watchError(config.stream.id), { error: error_1.message });
+                    return [3, 4];
+                case 4: return [2];
             }
         });
     });
 }
+exports["default"] = WatchController;
 //# sourceMappingURL=watch.js.map

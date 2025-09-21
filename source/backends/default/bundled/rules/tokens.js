@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.SELLexer = exports.Tokens = exports.RParen = exports.LParen = exports.GreaterEqual = exports.LesserEqual = exports.Identifier = exports.False = exports.True = exports.Booleans = exports.Subtraction = exports.Addition = exports.AdditiveOperators = exports.LessThan = exports.GreaterThan = exports.StrictEqual = exports.ComparisonOperators = exports.WhiteSpace = exports.NumberLiteral = exports.StringLiteral = exports.Null = exports.DotAccessor = exports.Variable = void 0;
 var chevrotain_1 = require("chevrotain");
 var index = {
@@ -32,17 +32,17 @@ exports.ComparisonOperators = (0, chevrotain_1.createToken)({
 exports.StrictEqual = (0, chevrotain_1.createToken)({
     name: "kn.sel.logic.compare.strict-equal",
     pattern: /===/,
-    categories: exports.ComparisonOperators,
+    categories: exports.ComparisonOperators
 });
 exports.GreaterThan = (0, chevrotain_1.createToken)({
     name: "kn.sel.logic.compare.greater-than",
     pattern: />/,
-    categories: exports.ComparisonOperators,
+    categories: exports.ComparisonOperators
 });
 exports.LessThan = (0, chevrotain_1.createToken)({
     name: "kn.sel.logic.compare.lesser-than",
     pattern: /</,
-    categories: exports.ComparisonOperators,
+    categories: exports.ComparisonOperators
 });
 exports.AdditiveOperators = (0, chevrotain_1.createToken)({
     name: "kn.sel.logic.addition",
@@ -51,16 +51,16 @@ exports.AdditiveOperators = (0, chevrotain_1.createToken)({
 exports.Addition = (0, chevrotain_1.createToken)({
     name: "kn.sel.logic.addition.addition",
     pattern: /\+/,
-    categories: exports.AdditiveOperators,
+    categories: exports.AdditiveOperators
 });
 exports.Subtraction = (0, chevrotain_1.createToken)({
     name: "kn.sel.logic.addition.subtract",
     pattern: /-/,
-    categories: exports.AdditiveOperators,
+    categories: exports.AdditiveOperators
 });
 exports.Booleans = (0, chevrotain_1.createToken)({
     name: "kn.sel.boolean",
-    pattern: chevrotain_1.Lexer.NA,
+    pattern: chevrotain_1.Lexer.NA
 });
 exports.True = (0, chevrotain_1.createToken)({
     name: "kn.sel.boolean.true",
@@ -81,6 +81,6 @@ exports.Tokens = [
     exports.WhiteSpace, exports.StringLiteral, exports.NumberLiteral, exports.ComparisonOperators, exports.LesserEqual, exports.GreaterEqual, exports.StrictEqual, exports.GreaterThan, exports.LessThan, exports.AdditiveOperators, exports.Addition, exports.Subtraction, exports.DotAccessor, exports.Booleans, exports.False, exports.True, exports.LParen, exports.RParen, exports.Variable,
 ];
 exports.SELLexer = new chevrotain_1.Lexer(exports.Tokens, {
-    ensureOptimizations: true,
+    ensureOptimizations: true
 });
 //# sourceMappingURL=tokens.js.map

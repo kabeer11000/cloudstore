@@ -21,12 +21,23 @@
     "source/packages/*"
   ],
   "scripts": {
+    "setup": "./scripts/setup-test-environment.sh",
     "backend:start": "bun --cwd source/backends/default dev",
+    "backend:build": "bun --cwd source/backends/default run copy:assets && tsc --project source/backends/default",
     "client:build": "bun --cwd source/client build:esm",
+    "client:build:all": "bun --cwd source/client build",
+    "example:dev": "bun --cwd example dev",
+    "example:build": "bun --cwd example build",
     "dev": "bun run backend:start",
+    "dev:all": "concurrently \"bun run backend:start\" \"bun run example:dev\"",
     "build": "bun run --filter '*' build",
+    "build:all": "bun run client:build:all && bun run backend:build && bun run example:build",
     "test": "bun run --filter '*' test",
-    "lint": "bun run --filter '*' lint"
+    "test:types": "tsc --noEmit --project source/client && tsc --noEmit --project source/backends/default",
+    "lint": "bun run --filter '*' lint",
+    "clean": "rm -rf source/client/build && rm -rf source/backends/default/bundled && rm -rf example/dist",
+    "typecheck": "bun run test:types",
+    "validate": "bun run typecheck && bun run lint && bun run build:all"
   },
   "devDependencies": {
     "bun-types": "latest",

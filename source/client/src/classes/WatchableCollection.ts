@@ -37,10 +37,8 @@ export default class WatchableCollection {
                         },
                         where: config.filters,
                         orderBy: {
-                            // @ts-ignore
-                            field: config.orderBy.field,
-                            // @ts-ignore
-                            direction: config.orderBy.direction ?? "ASCENDING"
+                            field: config.orderBy?.field || "_id",
+                            direction: config.orderBy?.direction ?? "ASCENDING"
                         },
                         limit: config.limit
                     }

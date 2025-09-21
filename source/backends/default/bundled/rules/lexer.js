@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.ParseExpression = void 0;
 var parser_1 = require("./parser");
 var tokens_1 = require("./tokens");
@@ -14,13 +14,13 @@ var ParseExpression = function () {
     var parser = new parser_1.SEL();
     parser.input = lexingResult.tokens;
     var BaseVisitor = parser.getBaseCstVisitorConstructor();
-    var ctx = parser.default();
+    var ctx = parser["default"]();
     console.log(JSON.stringify(ctx));
     console.log(ctx, lexingResult, lexingResult.tokens.map(function (_a) {
         var tokenType = _a.tokenType;
         return tokenType;
     }));
-    var CSTVisitor = (0, interpreter_1.default)(BaseVisitor);
+    var CSTVisitor = (0, interpreter_1["default"])(BaseVisitor);
     var interpreter = new CSTVisitor();
     console.log(interpreter.visit(ctx));
 };

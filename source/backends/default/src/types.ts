@@ -108,6 +108,35 @@ export interface IActiveWatchable {
         id: string
     }
 }
+export interface IGetConfig {
+    type: "kn.cloudstore.document:array" | "kn.cloudstore.document",
+    database: {
+        name: string,
+        version?: string,
+    },
+    ref: {
+        id: string
+    },
+    collection: {
+        name: string,
+    },
+    document?: {
+        id: string
+    },
+    query: {
+        structured: {
+            from: {
+                collection: string
+            },
+            where: Array<{ // Array of FieldFilters
+                "field": string, // Field Name, e.g. user.emails
+                "op": IFilterOperations,
+                "value": string | object
+            }>
+        }
+    }
+}
+
 export interface IDeleteConfig {
     type: "kn.cloudstore.document:array" | "kn.cloudstore.document",
     database: {

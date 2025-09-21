@@ -11,9 +11,7 @@ export class IndexedDB implements ImplementableStorageAdapter {
     // private idbKeyVal: Promise<any>;
     private store: any;
     constructor(collectionKey: string) {
-        // @ts-ignore
         this.store = IDB.createStore("cloudstore-cache", collectionKey);
-        // this.store.set("_", "_")
     }
 
     async get(key: string): Promise<void> {

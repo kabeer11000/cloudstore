@@ -22,7 +22,7 @@
       "@/classes/*": [
         "./src/classes/*"
       ],
-      "@/db/*": [
+      "@/db-internals/*": [
         "./src/db-internals/*"
       ],
       "@/auth/*": [

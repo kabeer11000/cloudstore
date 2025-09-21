@@ -14,8 +14,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = default_1;
+exports.__esModule = true;
 function default_1(BaseCstVisitor) {
     return (function (_super) {
         __extends(SELLInterpreter, _super);
@@ -25,7 +24,7 @@ function default_1(BaseCstVisitor) {
             _this.validateVisitor();
             return _this;
         }
-        SELLInterpreter.prototype.default = function (context) {
+        SELLInterpreter.prototype["default"] = function (context) {
             console.log(context);
             return this.visit(context.Expression);
         };
@@ -48,4 +47,5 @@ function default_1(BaseCstVisitor) {
         return SELLInterpreter;
     }(BaseCstVisitor));
 }
+exports["default"] = default_1;
 //# sourceMappingURL=interpreter.js.map

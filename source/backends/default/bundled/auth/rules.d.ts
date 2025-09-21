@@ -1,13 +1,13 @@
 export declare const ParseRules: () => Promise<{
-    databases: Array<{
+    databases: {
         name: string;
         rules: {
             collections: {
                 [x: string]: {
-                    ".write": string;
-                    ".read": string;
+                    '.write': string;
+                    '.read': string;
                 };
             };
         };
-    }>;
+    }[];
 }>;

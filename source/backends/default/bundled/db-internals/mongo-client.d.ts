@@ -1,2 +1,3 @@
-declare const MongoDatabasePromise: Promise<import("mongodb").Db>;
+import { MongoClient } from "mongodb";
+declare const MongoDatabasePromise: Promise<MongoClient>;
 export default MongoDatabasePromise;

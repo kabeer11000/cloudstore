@@ -33,7 +33,6 @@ export default class QueryBuilder {
         return this;
     }
 
-    // @ts-ignore
     get _query() {
         return this.query;
     }
