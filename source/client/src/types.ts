@@ -5,15 +5,11 @@ export interface ICloudStoreConstructor {
     server: {
         uri: string,
         access: {
-            key: string
+            key: string,
+            tenant_id: string,
         },
         config: {
             upgradeToBackgroundSync: boolean,
-        }
-    },
-    authentication: {
-        custom_token: {
-            jwt: string
         }
     },
     cache: {
