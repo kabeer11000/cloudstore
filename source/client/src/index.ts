@@ -30,7 +30,7 @@ export default class CloudStore {
                 authorization: `Bearer ${config.server.access.key}`
             },
             query: {
-                tenant_id: config.server.access.key
+                tenant_id: config.server.access.tenant_id
             }
         });
         this.internals.constructorConfig = config;
