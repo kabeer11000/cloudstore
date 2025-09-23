@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@kabeersnetwork/cloudstore": "file:../source/client",
     "preact": "^10.10.6",
     "uuid": "^9.0.0"
   },

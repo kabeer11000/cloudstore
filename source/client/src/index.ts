@@ -30,6 +30,9 @@ export default class CloudStore {
                 authorization: `Bearer ${config.server.access.key}`
             },
             query: {
+                /**
+                 * @deprecated This property is redundant, and hints that cloudstore deployment will be centralised.
+                **/
                 tenant_id: config.server.access.tenant_id
             }
         });

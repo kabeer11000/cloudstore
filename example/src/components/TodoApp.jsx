@@ -1,5 +1,7 @@
 import { useState } from 'preact/hooks';
-import { useCollection, useCloudStore } from '../hooks/useCloudStore.jsx';
+import { useMemo } from 'preact/compat';
+import { useCloudStore } from '../hooks/useCloudStore.jsx';
+import { useCollection } from "../hooks";
 import { v4 } from 'uuid';
 
 const TodoItem = ({ todo, onUpdate, onDelete }) => {
@@ -132,7 +134,8 @@ export const TodoApp = () => {
     const { cloudStore, isConnected, connectionError } = useCloudStore();
     const [newTodoText, setNewTodoText] = useState('');
     const [filter, setFilter] = useState('all'); // all, active, completed
-
+    const todoCollection = cloudStore.collection('todos')
+    console.log(todoCollection)
     // Create query based on filter
     const query = cloudStore?.query.orderBy('createdAt', 'DESCENDING');
     if (filter === 'active') {
@@ -141,13 +144,14 @@ export const TodoApp = () => {
         query?.where('completed', 'EQUAL', true);
     }
 
-    const { data: todos, loading, error, operations } = useCollection('todos', query);
+    const { data: todos, loading, error } = useCollection(todoCollection, query, []);
+    console.log('parent-rerendering', todos)
 
     const handleAddTodo = async () => {
         if (!newTodoText.trim()) return;
 
         try {
-            await operations.insert({
+            await todoCollection.insert({
                 id: v4(),
                 text: newTodoText.trim(),
                 completed: false,
@@ -162,7 +166,7 @@ export const TodoApp = () => {
     const handleUpdateTodo = async (todoId, updates) => {
         try {
             const updateQuery = cloudStore.query.where('id', 'EQUAL', todoId);
-            await operations.update(updateQuery, updates);
+            await todoCollection.update(updateQuery, updates);
         } catch (err) {
             console.error('Failed to update todo:', err);
         }
@@ -171,7 +175,7 @@ export const TodoApp = () => {
     const handleDeleteTodo = async (todoId) => {
         try {
             const deleteQuery = cloudStore.query.where('id', 'EQUAL', todoId);
-            await operations.remove(deleteQuery);
+            await todoCollection.remove(deleteQuery);
         } catch (err) {
             console.error('Failed to delete todo:', err);
         }
@@ -180,16 +184,16 @@ export const TodoApp = () => {
     const handleClearCompleted = async () => {
         try {
             const deleteQuery = cloudStore.query.where('completed', 'EQUAL', true);
-            await operations.remove(deleteQuery);
+            await todoCollection.remove(deleteQuery);
         } catch (err) {
             console.error('Failed to clear completed todos:', err);
         }
     };
 
     const stats = {
-        total: todos.length,
-        active: todos.filter(todo => !todo.completed).length,
-        completed: todos.filter(todo => todo.completed).length
+        total: todos?.length,
+        active: todos?.filter(todo => !todo.completed).length,
+        completed: todos?.filter(todo => todo.completed).length
     };
 
     return (
@@ -309,7 +313,7 @@ export const TodoApp = () => {
             {/* Todo list */}
             {!loading && (
                 <ul style={{ listStyle: 'none', padding: 0 }}>
-                    {todos.length === 0 ? (
+                    {todos?.length === 0 ? (
                         <li style={{
                             textAlign: 'center',
                             padding: '3rem',
@@ -318,11 +322,11 @@ export const TodoApp = () => {
                             borderRadius: '8px'
                         }}>
                             {filter === 'all' ? 'No todos yet. Add one above!' :
-                             filter === 'active' ? 'No active todos!' :
-                             'No completed todos!'}
+                                filter === 'active' ? 'No active todos!' :
+                                    'No completed todos!'}
                         </li>
                     ) : (
-                        todos.map(todo => (
+                        todos?.map(todo => (
                             <TodoItem
                                 key={todo.id}
                                 todo={todo}

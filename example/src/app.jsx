@@ -12,15 +12,11 @@ const cloudStore = new CloudStore({
     server: {
         uri: "http://localhost:8080",
         access: {
-            key: "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.tyh-VfuzIxCyGYDlkBA7DfyjrqmSHu6pQ2hoZuFqUSLPNY2N0mpHb3nk5K17HWP_3cYHBw7AhHale5wky6-sVA"
+            tenant_id: 'lexa-demo',
+            key: "eyJ0eXAiOiJhdCtqd3QiLCJhbGciOiJFUzI1NiIsImtpZCI6Im1jUnFJRnkybmZ5WnRwaHUrekxkUVYzZEFHWWxtcDJtanNrbytjVzlLMzg9In0.eyJpc3MiOiJodHRwczovL2lkcC5sb2NhbCIsImF1ZCI6ImFwaTEiLCJzdWIiOiI1YmU4NjM1OTA3M2M0MzRiYWQyZGEzOTMyMjIyZGFiZSIsImNsaWVudF9pZCI6Im15X2NsaWVudF9hcHAiLCJleHAiOjQwNzA5MDg4MDAsImlhdCI6MTc1ODYyMDAwMCwianRpIjoiMzQwYWUwNmMxNGRhOGNiOTk0OTNmNjExZTNlNzdkNmQifQ.FV4oYBHjvK35pWFKDczkZnd91Bco_zR3f2501rZX_gmJfR1D_umUdsepj7P8kkbWIYUQZEnAB4Q2oVRgyhtKcQ"
         },
         config: {
             upgradeToBackgroundSync: true,
-        }
-    },
-    authentication: {
-        custom_token: {
-            jwt: "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.tyh-VfuzIxCyGYDlkBA7DfyjrqmSHu6pQ2hoZuFqUSLPNY2N0mpHb3nk5K17HWP_3cYHBw7AhHale5wky6-sVA"
         }
     },
     cache: {

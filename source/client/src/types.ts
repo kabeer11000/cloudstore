@@ -1,11 +1,14 @@
-import {Socket} from "socket.io-client";
-import {ImplementableStorageAdapter} from "./adapters";
+import { Socket } from "socket.io-client";
+import { ImplementableStorageAdapter } from "./adapters";
 
 export interface ICloudStoreConstructor {
     server: {
         uri: string,
         access: {
             key: string,
+            /**
+             * @deprecated This property is redundant, and hints that cloudstore deployment will be centralised.
+            **/
             tenant_id: string,
         },
         config: {
