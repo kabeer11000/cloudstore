@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { useMemo } from 'preact/compat';
+import { memo, useMemo } from 'preact/compat';
 import { useCloudStore } from '../hooks/useCloudStore.jsx';
 import { useCollection } from "../hooks";
 import { v4 } from 'uuid';
@@ -130,12 +130,14 @@ const ConnectionStatus = ({ isConnected, error }) => {
     );
 };
 
+
 export const TodoApp = () => {
-    const { cloudStore, isConnected, connectionError } = useCloudStore();
     const [newTodoText, setNewTodoText] = useState('');
     const [filter, setFilter] = useState('all'); // all, active, completed
-    const todoCollection = cloudStore.collection('todos')
-    console.log(todoCollection)
+
+    const { cloudStore, isConnected, connectionError } = useCloudStore();
+    const todoCollection = useMemo(() => cloudStore.collection('todos'), []);
+        console.log(todoCollection)
     // Create query based on filter
     const query = cloudStore?.query.orderBy('createdAt', 'DESCENDING');
     if (filter === 'active') {
