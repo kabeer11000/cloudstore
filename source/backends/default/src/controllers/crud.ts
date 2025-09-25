@@ -18,14 +18,16 @@ const FilterOperatorToMongoDBMap = {
 function buildFilter(filter: any) {
     if (filter.op === "ARRAY.ELEMENT_AT") {
         // Handle ARRAY.ELEMENT_AT: { index: -1, value: 'b' }
-        return {
+        const result = {
             $expr: {
                 $eq: [
-                    { $arrayElemAt: [`$${filter.field}`, filter.value.index] },
+                    { $arrayElemAt: ["$" + filter.field, filter.value.index] },
                     filter.value.value
                 ]
             }
         };
+        console.log('ARRAY.ELEMENT_AT filter built:', JSON.stringify(result, null, 2));
+        return result;
     } else {
         // Handle standard operations
         return {

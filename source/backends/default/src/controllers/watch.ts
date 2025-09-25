@@ -18,14 +18,16 @@ export const FilterOperatorToMongoDBMap = {
 function buildFilter(filter: any) {
     if (filter.op === "ARRAY.ELEMENT_AT") {
         // Handle ARRAY.ELEMENT_AT: { index: -1, value: 'b' }
-        return {
+        const result = {
             $expr: {
                 $eq: [
-                    { $arrayElemAt: [`$${filter.field}`, filter.value.index] },
+                    { $arrayElemAt: ["$" + filter.field, filter.value.index] },
                     filter.value.value
                 ]
             }
         };
+        console.log('ARRAY.ELEMENT_AT filter built:', JSON.stringify(result, null, 2));
+        return result;
     } else {
         // Handle standard operations
         return {
@@ -48,8 +50,10 @@ export default async function WatchController(socket: Socket<any, any>, config: 
 
         stream.on("change", async data => {
             try {
+                const query = filters.length ? { $and: [...filters] } : {};
+                console.log('MongoDB Query:', JSON.stringify(query, null, 2));
                 const collection = await db.collection(config.watchable.collection.name)
-                    .find(filters.length ? { $and: [...filters] } : {})
+                    .find(query)
                     .toArray();
                 socket.emit(Events.server.WATCH_CALLBACK(config.stream.id), {
                     collection,
@@ -105,9 +109,12 @@ export default async function WatchController(socket: Socket<any, any>, config: 
         socket.on(`watch:${config.stream.id}:close`, closeHandler);
 
         // Send initial data
+        const initialQuery = filters.length ? { $and: [...filters] } : {};
+        console.log('Initial MongoDB Query:', JSON.stringify(initialQuery, null, 2));
         const initialData = await db.collection(config.watchable.collection.name)
-            .find(filters.length ? { $and: [...filters] } : {})
+            .find(initialQuery)
             .toArray();
+        console.log('Initial query results count:', initialData.length);
         socket.emit(Events.server.WATCH_CALLBACK(config.stream.id), {
             collection: initialData,
             _update: { operationType: 'initial' }
