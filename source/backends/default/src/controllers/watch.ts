@@ -10,17 +10,36 @@ export const FilterOperatorToMongoDBMap = {
     "GREATER_EQUAL": "$gte",
     "LESSER_EQUAL": "$lte",
     "ARRAY.IN": "$in",
-    "ARRAY.NOT_IN": "$nin"
+    "ARRAY.NOT_IN": "$nin",
+    "ARRAY.EQUALS": "$eq",
+    "ARRAY.ELEMENT_AT": "$expr"
+}
+
+function buildFilter(filter: any) {
+    if (filter.op === "ARRAY.ELEMENT_AT") {
+        // Handle ARRAY.ELEMENT_AT: { index: -1, value: 'b' }
+        return {
+            $expr: {
+                $eq: [
+                    { $arrayElemAt: [`$${filter.field}`, filter.value.index] },
+                    filter.value.value
+                ]
+            }
+        };
+    } else {
+        // Handle standard operations
+        return {
+            [filter.field]: {
+                [FilterOperatorToMongoDBMap[filter.op as keyof typeof FilterOperatorToMongoDBMap]]: filter.value
+            }
+        };
+    }
 }
 export default async function WatchController(socket: Socket<any, any>, config: IWatchConfig) {
     try {
         const db = (await MongoDatabasePromise).db(config.watchable.database.name);
         const stream = db.collection(config.watchable.collection.name).watch([]);
-        const filters = config.watchable.query.structured.where.map(filter => ({
-            [filter.field]: {
-                [FilterOperatorToMongoDBMap[filter.op as keyof typeof FilterOperatorToMongoDBMap]]: filter.value
-            }
-        }));
+        const filters = config.watchable.query.structured.where.map(buildFilter);
 
         // Initialize activeWatchables as Map if not exists
         if (!socket.data.activeWatchables) {

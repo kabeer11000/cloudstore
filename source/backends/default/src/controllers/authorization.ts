@@ -21,6 +21,7 @@ export const Authorization = async (socket: Socket<DefaultEventsMap, DefaultEven
         socket.auth = socket?.auth || {};
         socket.auth.verified = true;
         socket.auth.data = decoded;
+        console.log('k', socket.handshake.headers['authorization'].split(' ')[1], decoded);
         return next();
     } catch (e) {
         console.log('invalid token', e)

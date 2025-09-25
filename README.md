@@ -75,6 +75,59 @@ bun run lint
 
 Once you have the development environment set up, you can start the backend server and begin storing and retrieving data in real-time. You can also define custom validation and logic rules using the CSEL-based database rules engine to ensure data consistency and enforce business rules.
 
+## Query Operations
+
+CloudStore supports various query operations for filtering data:
+
+### Standard Operations
+- `EQUAL` - Exact match
+- `GREATER` / `LESSER` - Comparison operations
+- `GREATER_EQUAL` / `LESSER_EQUAL` - Inclusive comparison
+
+### Array Operations
+
+#### `ARRAY.IN` / `ARRAY.NOT_IN`
+Check if a value exists within an array field.
+
+```javascript
+// Find documents where 'pending' is in the status array
+query.where('status', 'ARRAY.IN', ['pending'])
+```
+
+#### `ARRAY.EQUALS` ⭐ NEW
+Check if an array field exactly matches the provided array.
+
+```javascript
+// Find documents with exact parent hierarchy
+query.where('parents', 'ARRAY.EQUALS', ['root', 'folder', 'subfolder'])
+```
+
+#### `ARRAY.ELEMENT_AT` ⭐ NEW
+Check if a specific array element (by index) equals a value.
+
+```javascript
+// Check last element (index -1)
+query.where('parents', 'ARRAY.ELEMENT_AT', { index: -1, value: 'subfolder' })
+
+// Check first element (index 0)
+query.where('parents', 'ARRAY.ELEMENT_AT', { index: 0, value: 'root' })
+
+// Check second element (index 1)
+query.where('parents', 'ARRAY.ELEMENT_AT', { index: 1, value: 'folder' })
+```
+
+### Use Case: Folder Hierarchy Filtering
+
+For a folder structure like `/root/a/b/c/`, use `ARRAY.ELEMENT_AT` to get documents in a specific folder without including subfolders:
+
+```javascript
+// Get documents directly in folder 'b', excluding deeper nested documents
+query.where('parents', 'ARRAY.ELEMENT_AT', { index: -1, value: 'b' })
+
+// This will match: ['root', 'a', 'b'] ✅
+// But not match: ['root', 'a', 'b', 'c'] ❌
+```
+
 ## Documentation
 
 ### Development Guides

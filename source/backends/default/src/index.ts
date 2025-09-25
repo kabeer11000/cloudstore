@@ -28,6 +28,9 @@ io.on("connection", async (socket: any) => {
         socket.emit("config-cb", { _s: ServerVersion });
     });
     socket.on(Events.collection.collection(), async (config: { name: string, ref: { id: string } }) => {
+        if (!socket.data) return socket.emit(Events.collection.collectionCB(config.ref.id), {
+            error: true, name: config.name, e: 'Configuration not found for client. '
+        })
         try {
             const db = (await MongoDatabasePromise).db(socket.data.config.database);
             const collections = await db.collections();
@@ -36,6 +39,7 @@ io.on("connection", async (socket: any) => {
                 name: config.name,
             });
         } catch (e) {
+            console.log(e);
             socket.emit(Events.collection.collectionCB(config.ref.id), {
                 name: config.name,
                 error: true,

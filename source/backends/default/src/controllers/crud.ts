@@ -10,17 +10,36 @@ const FilterOperatorToMongoDBMap = {
     "GREATER_EQUAL": "$gte",
     "LESSER_EQUAL": "$lte",
     "ARRAY.IN": "$in",
-    "ARRAY.NOT_IN": "$nin"
+    "ARRAY.NOT_IN": "$nin",
+    "ARRAY.EQUALS": "$eq",
+    "ARRAY.ELEMENT_AT": "$expr"
+}
+
+function buildFilter(filter: any) {
+    if (filter.op === "ARRAY.ELEMENT_AT") {
+        // Handle ARRAY.ELEMENT_AT: { index: -1, value: 'b' }
+        return {
+            $expr: {
+                $eq: [
+                    { $arrayElemAt: [`$${filter.field}`, filter.value.index] },
+                    filter.value.value
+                ]
+            }
+        };
+    } else {
+        // Handle standard operations
+        return {
+            [filter.field]: {
+                [FilterOperatorToMongoDBMap[filter.op as keyof typeof FilterOperatorToMongoDBMap]]: filter.value
+            }
+        };
+    }
 }
 
 export async function UpdateHandler(socket: Socket<any, any>, config: IUpdateConfig) {
     try {
         const db = (await MongoDatabasePromise).db(config.updatable.database.name);
-        const filters = config.updatable.query.structured.where.map(filter => ({
-            [filter.field]: {
-                [FilterOperatorToMongoDBMap[filter.op as keyof typeof FilterOperatorToMongoDBMap]]: filter.value
-            }
-        }));
+        const filters = config.updatable.query.structured.where.map(buildFilter);
 
         let actionOutPut: UpdateResult | undefined | Document;
         const query = filters.length ? { $and: filters } : {};
@@ -41,11 +60,7 @@ export async function UpdateHandler(socket: Socket<any, any>, config: IUpdateCon
 export async function DeleteHandler(socket: Socket<any, any>, config: IDeleteConfig) {
     try {
         const db = (await MongoDatabasePromise).db(config.database.name);
-        const filters = config.query.structured.where.map(filter => ({
-            [filter.field]: {
-                [FilterOperatorToMongoDBMap[filter.op as keyof typeof FilterOperatorToMongoDBMap]]: filter.value
-            }
-        }));
+        const filters = config.query.structured.where.map(buildFilter);
 
         let deletionOutPut;
         const query = filters.length ? { $and: filters } : {};
@@ -66,11 +81,7 @@ export async function DeleteHandler(socket: Socket<any, any>, config: IDeleteCon
 export async function GetHandler(socket: Socket<any, any>, config: IGetConfig) {
     try {
         const db = (await MongoDatabasePromise).db(config.database.name);
-        const filters = config.query.structured.where.map(filter => ({
-            [filter.field]: {
-                [FilterOperatorToMongoDBMap[filter.op as keyof typeof FilterOperatorToMongoDBMap]]: filter.value
-            }
-        }));
+        const filters = config.query.structured.where.map(buildFilter);
 
         let result;
         const query = filters.length ? { $and: filters } : {};

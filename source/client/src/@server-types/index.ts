@@ -5,7 +5,9 @@ export type IFilterOperations =
     | "GREATER_EQUAL"
     | "LESSER_EQUAL"
     | "ARRAY.IN"
-    | "ARRAY.NOT_IN";
+    | "ARRAY.NOT_IN"
+    | "ARRAY.EQUALS"
+    | "ARRAY.ELEMENT_AT";
 export type IOrderByDirections = "ASCENDING" | "DESCENDING";
 
 export interface IWatchConfig {
