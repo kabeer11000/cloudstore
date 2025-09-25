@@ -51,6 +51,38 @@ export default class CloudStore {
             this.internals.connection.remote.config = data;
         })
     }
+    public destroy() {
+        /**
+         * Synchronous destroy call 
+        **/
+        if (this.internals.socket) {
+            // 1. Remove all socket listeners to prevent memory leaks
+            this.internals.socket.removeAllListeners();
+
+            // 2. Properly close the socket connection
+            this.internals.socket.close();
+
+            // 3. Nullify the socket reference
+            this.internals.socket = undefined;
+        }
+
+        // 4. Clean up the cache adapter (assuming IndexedDB might need closing)
+        //    You'll need to check if IndexedDB adapter has a destroy/close method.
+        //    If it's just a class instance without a cleanup method, setting to null is enough.
+        //    Example if adapter has a close method:
+        //    if (typeof this.internals.cache.storage.adapter.close === 'function') {
+        //        this.internals.cache.storage.adapter.close();
+        //    }
+
+        // 5. Clear contexts (optional, but good for cleanup)
+        this.internals.contexts = {};
+
+        // 6. Optional: Nullify the overall internals object to aid GC 
+        //    if the *instance* is kept, but it's generally cleaner to rely on the 
+        //    instance itself being garbage collected.
+        // this.internals = null; // <- Only if you update IInternalState to allow null
+
+    }
     private QueryWithCallback(eventName: string, data: object, callbackEventName: string, { cleanup }: { cleanup: boolean } = { cleanup: true }) {
         return new Promise((resolve, reject) => {
             this.internals.socket?.on(callbackEventName, async (response: { error?: boolean, [x: string]: any }) => {
