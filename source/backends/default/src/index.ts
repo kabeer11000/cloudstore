@@ -1,4 +1,4 @@
-import WatchController from "@/controllers/watch";
+import WatchController, { streamWatchers, queryCache, collectionStreams, queryHashCount } from "@/controllers/watch";
 import { Server } from "socket.io";
 import { ServerVersion } from "./config";
 import { DeleteHandler, InsertHandler, UpdateHandler, GetHandler } from "@/controllers/crud";
@@ -55,9 +55,6 @@ io.on("connection", async (socket: any) => {
         if (socket.data.activeWatchables) {
             for (const [streamId] of socket.data.activeWatchables) {
                 try {
-                    // Import at the top if not already imported
-                    const { streamWatchers, queryCache, collectionStreams } = require("@/controllers/watch");
-
                     const watcherData = streamWatchers?.get(streamId);
                     if (watcherData) {
                         const { watcher, queryHash, streamData } = watcherData;
@@ -72,8 +69,16 @@ io.on("connection", async (socket: any) => {
                         }
 
                         // Remove from stream
-                        streamData?.watchers.delete(queryHash);
-                        if (streamData?.watchers.size === 0) {
+                        streamData.watcherCount--;
+                        const count = queryHashCount?.get(queryHash) || 0;
+                        if (count > 1) {
+                            queryHashCount.set(queryHash, count - 1);
+                        } else {
+                            queryHashCount?.delete(queryHash);
+                            streamData.watchers.delete(queryHash);
+                        }
+
+                        if (streamData.watcherCount === 0) {
                             streamData.stream?.close();
                             collectionStreams?.delete(streamData.key);
                         }

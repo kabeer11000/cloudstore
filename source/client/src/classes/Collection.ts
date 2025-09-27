@@ -33,7 +33,13 @@ export default class Collection {
     public remove(query: QueryBuilder) {
         const ref = v4();
         return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                this.internals.socket.removeListener("delete-cb-" + ref, handler);
+                reject(new Error('Delete operation timed out'));
+            }, 30000);
+
             const handler = ({status, result, error}: {status: boolean, result?: any, error?: string}) => {
+                clearTimeout(timeout);
                 if (status) {
                     resolve(result);
                 } else {
@@ -68,7 +74,13 @@ export default class Collection {
     public get(query: QueryBuilder) {
         const ref = v4();
         return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                this.internals.socket.removeListener("get-cb-" + ref, handler);
+                reject(new Error('Get operation timed out'));
+            }, 30000);
+
             const handler = ({status, data, error}: {status: boolean, data?: any, error?: string}) => {
+                clearTimeout(timeout);
                 if (status) {
                     resolve(data);
                 } else {
@@ -103,7 +115,13 @@ export default class Collection {
     public update(query: QueryBuilder, data: object) {
         const ref = v4();
         return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                this.internals.socket?.removeListener("update-cb-" + ref, handler);
+                reject(new Error('Update operation timed out'));
+            }, 30000);
+
             const handler = ({status, result, error}: {status: boolean, result?: any, error?: string}) => {
+                clearTimeout(timeout);
                 if (status) {
                     resolve(result);
                 } else {
@@ -138,7 +156,13 @@ export default class Collection {
     public insert(data: object | object[]) {
         const ref = v4();
         return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                this.internals.socket?.removeListener("insert-cb-" + ref, handler);
+                reject(new Error('Insert operation timed out'));
+            }, 30000);
+
             const handler = ({status, result, error}: {status: boolean, result?: any, error?: string}) => {
+                clearTimeout(timeout);
                 if (status) {
                     resolve(result);
                 } else {

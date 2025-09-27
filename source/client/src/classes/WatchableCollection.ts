@@ -15,6 +15,7 @@ export default class WatchableCollection {
             config: config
         };
         this.internal.subscriptions.push(subscription);
+
         config.socket.on("watchable-change-" + subscription.id, (data: object) => {
             config.onUpdate(data);
         })
