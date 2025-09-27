@@ -102,17 +102,28 @@ export default class CloudStore {
 
     public collection(name: string) {
         /**
-         * Synchronous Config call 
+         * Synchronous Config call
         **/
         const ref = v4();
-        this.internals.socket?.on("collection-cb-" + ref, (response: { name: string, exists: boolean }) => {
-            if (!response.exists) throw new Error("Collection: " + response.name + " does not exist?");
-        });
-        this.internals.socket?.emit("collection", {
-            name: name, ref: {
-                id: ref
+        let listenerAdded = false;
+        const handleResponse = (response: { name: string, exists: boolean, error?: boolean }) => {
+            if (response.error || !response.exists) {
+                console.warn("Collection: " + response.name + " does not exist or error occurred");
             }
-        });
+            if (listenerAdded) {
+                this.internals.socket?.removeListener("collection-cb-" + ref, handleResponse);
+                listenerAdded = false;
+            }
+        };
+
+        if (this.internals.socket) {
+            this.internals.socket.on("collection-cb-" + ref, handleResponse);
+            listenerAdded = true;
+            this.internals.socket.emit("collection", {
+                name: name, ref: { id: ref }
+            });
+        }
+
         if (!this.internals.socket || !this.internals.constructorConfig?.database) return undefined;
         return new Collection({
             database: this.internals.constructorConfig.database,

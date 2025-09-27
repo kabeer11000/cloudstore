@@ -26,7 +26,9 @@ function buildFilter(filter: any) {
                 ]
             }
         };
-        console.log('ARRAY.ELEMENT_AT filter built:', JSON.stringify(result, null, 2));
+        if (process.env.NODE_ENV === 'development') {
+            console.log('ARRAY.ELEMENT_AT filter built:', JSON.stringify(result, null, 2));
+        }
         return result;
     } else {
         // Handle standard operations
@@ -55,7 +57,7 @@ export async function UpdateHandler(socket: Socket<any, any>, config: IUpdateCon
 
         socket.emit("update-cb-" + config.updatable.ref.id, { status: true, result: actionOutPut });
     } catch (error) {
-        socket.emit("update-cb-" + config.updatable.ref.id, { status: false, error: error.message });
+        socket.emit("update-cb-" + config.updatable.ref.id, { status: false, error: error?.message || 'Update failed' });
     }
 }
 
@@ -75,7 +77,7 @@ export async function DeleteHandler(socket: Socket<any, any>, config: IDeleteCon
 
         socket.emit("delete-cb-" + config.ref.id, { status: true, result: deletionOutPut });
     } catch (error) {
-        socket.emit("delete-cb-" + config.ref.id, { status: false, error: error.message });
+        socket.emit("delete-cb-" + config.ref.id, { status: false, error: error?.message || 'Delete failed' });
     }
 }
 
@@ -96,14 +98,14 @@ export async function GetHandler(socket: Socket<any, any>, config: IGetConfig) {
 
         socket.emit("get-cb-" + config.ref.id, { status: true, data: result });
     } catch (error) {
-        socket.emit("get-cb-" + config.ref.id, { status: false, error: error.message });
+        socket.emit("get-cb-" + config.ref.id, { status: false, error: error?.message || 'Get failed' });
     }
 }
 
 export async function InsertHandler(socket: Socket<any, any>, config: IInsertConfig) {
     try {
         if (!config || !config.ref) {
-            socket.emit("insert-cb-" + config.ref.id, { status: false, error: 'Config invalid, event ref not attached' });
+            socket.emit("insert-cb-unknown", { status: false, error: 'Config invalid, event ref not attached' });
             return;
         }
 
@@ -113,6 +115,6 @@ export async function InsertHandler(socket: Socket<any, any>, config: IInsertCon
         const insertionOutPut = await db.collection(config.collection.name).insertMany(documents, {});
         socket.emit("insert-cb-" + config.ref.id, { status: true, result: insertionOutPut });
     } catch (error) {
-        socket.emit("insert-cb-" + config.ref.id, { status: false, error: error.message });
+        socket.emit("insert-cb-" + config.ref.id, { status: false, error: error?.message || 'Insert failed' });
     }
 }

@@ -33,14 +33,15 @@ export default class Collection {
     public remove(query: QueryBuilder) {
         const ref = v4();
         return new Promise((resolve, reject) => {
-            this.internals.socket.on("delete-cb-" + ref, ({status, result, error}: {status: boolean, result?: any, error?: string}) => {
+            const handler = ({status, result, error}: {status: boolean, result?: any, error?: string}) => {
                 if (status) {
                     resolve(result);
                 } else {
                     reject(new Error(error || 'Delete failed'));
                 }
-                this.internals.socket.removeListener("delete-cb-" + ref);
-            });
+                this.internals.socket.removeListener("delete-cb-" + ref, handler);
+            };
+            this.internals.socket.on("delete-cb-" + ref, handler);
             this.internals.socket.emit("delete", {
                 type: "kn.cloudstore.document:array",
                 database: {
@@ -67,14 +68,15 @@ export default class Collection {
     public get(query: QueryBuilder) {
         const ref = v4();
         return new Promise((resolve, reject) => {
-            this.internals.socket.on("get-cb-" + ref, ({status, data, error}: {status: boolean, data?: any, error?: string}) => {
+            const handler = ({status, data, error}: {status: boolean, data?: any, error?: string}) => {
                 if (status) {
                     resolve(data);
                 } else {
                     reject(new Error(error || 'Get failed'));
                 }
-                this.internals.socket.removeListener("get-cb-" + ref);
-            });
+                this.internals.socket.removeListener("get-cb-" + ref, handler);
+            };
+            this.internals.socket.on("get-cb-" + ref, handler);
             this.internals.socket.emit("get", {
                 type: "kn.cloudstore.document:array",
                 database: {
@@ -101,14 +103,15 @@ export default class Collection {
     public update(query: QueryBuilder, data: object) {
         const ref = v4();
         return new Promise((resolve, reject) => {
-            this.internals.socket?.on("update-cb-" + ref, ({status, result, error}: {status: boolean, result?: any, error?: string}) => {
+            const handler = ({status, result, error}: {status: boolean, result?: any, error?: string}) => {
                 if (status) {
                     resolve(result);
                 } else {
                     reject(new Error(error || 'Update failed'));
                 }
-                this.internals.socket?.removeListener("update-cb-" + ref);
-            });
+                this.internals.socket?.removeListener("update-cb-" + ref, handler);
+            };
+            this.internals.socket?.on("update-cb-" + ref, handler);
             this.internals.socket?.emit("update", {
                 updatable: {
                     type: "kn.cloudstore.collection",
@@ -135,14 +138,15 @@ export default class Collection {
     public insert(data: object | object[]) {
         const ref = v4();
         return new Promise((resolve, reject) => {
-            this.internals.socket?.on("insert-cb-" + ref, ({status, result, error}: {status: boolean, result?: any, error?: string}) => {
+            const handler = ({status, result, error}: {status: boolean, result?: any, error?: string}) => {
                 if (status) {
                     resolve(result);
                 } else {
                     reject(new Error(error || 'Insert failed'));
                 }
-                this.internals.socket?.removeListener("insert-cb-" + ref);
-            });
+                this.internals.socket?.removeListener("insert-cb-" + ref, handler);
+            };
+            this.internals.socket?.on("insert-cb-" + ref, handler);
 
             const insertions = Array.isArray(data) ? data.map(d => ({data: d})) : [{data}];
 

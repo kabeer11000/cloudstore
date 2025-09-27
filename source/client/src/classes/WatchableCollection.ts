@@ -46,4 +46,17 @@ export default class WatchableCollection {
             }
         });
     }
+
+    public close() {
+        // Clean up all subscriptions
+        this.internal.subscriptions.forEach(sub => {
+            sub.config.socket.removeListener("watchable-change-" + sub.id);
+            sub.config.socket.emit(`watch:${sub.id}:close`, { stream: { id: sub.id } });
+        });
+        this.internal.subscriptions = [];
+    }
+
+    public destroy() {
+        this.close();
+    }
 }

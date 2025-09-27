@@ -11,7 +11,7 @@ export const Authorization = async (socket: Socket<DefaultEventsMap, DefaultEven
     const tenantPublicKeyResult = await (await RedisClientPromise).get(socket.handshake.query.tenant_id.toString());
     if (!tenantPublicKeyResult) return next(new Error('error, Tenant is not registered! Kindly make sure [tenant_id, publicKey] is added to the Redis instance.'));
 
-    const tenantPublicKey = tenantPublicKeyResult.toString().replace(/\n/g, '\n');
+    const tenantPublicKey = tenantPublicKeyResult.toString().replace(/\\n/g, '\n');
     try {
         const decoded = jwt.verify(socket.handshake.headers['authorization'].split(' ')[1], tenantPublicKey, {
             algorithms: ['ES256'],
@@ -21,10 +21,14 @@ export const Authorization = async (socket: Socket<DefaultEventsMap, DefaultEven
         socket.auth = socket?.auth || {};
         socket.auth.verified = true;
         socket.auth.data = decoded;
-        console.log('k', socket.handshake.headers['authorization'].split(' ')[1], decoded);
+        if (process.env.NODE_ENV === 'development') {
+            console.log('JWT verified for tenant:', socket.handshake.query.tenant_id);
+        }
         return next();
     } catch (e) {
-        console.log('invalid token', e)
+        if (process.env.NODE_ENV === 'development') {
+            console.log('invalid token', e);
+        }
         return next(new Error('error, Failed to verify Bearer token against tenant. '));
     }
 }

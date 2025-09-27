@@ -47,9 +47,45 @@ io.on("connection", async (socket: any) => {
         }
     });
     socket.on('disconnect', (reason) => {
-        console.log(`client ${socket.id} disconnected: ${reason}`);
-        // Clean up any active watches or resources 
-        socket.data.activeWatchables?.clear();
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`client ${socket.id} disconnected: ${reason}`);
+        }
+
+        // Clean up optimized watch streams
+        if (socket.data.activeWatchables) {
+            for (const [streamId] of socket.data.activeWatchables) {
+                try {
+                    // Import at the top if not already imported
+                    const { streamWatchers, queryCache, collectionStreams } = require("@/controllers/watch");
+
+                    const watcherData = streamWatchers?.get(streamId);
+                    if (watcherData) {
+                        const { watcher, queryHash, streamData } = watcherData;
+
+                        // Remove from cache
+                        const cacheEntry = queryCache?.get(queryHash);
+                        if (cacheEntry) {
+                            cacheEntry.watchers.delete(watcher);
+                            if (cacheEntry.watchers.size === 0) {
+                                queryCache.delete(queryHash);
+                            }
+                        }
+
+                        // Remove from stream
+                        streamData?.watchers.delete(queryHash);
+                        if (streamData?.watchers.size === 0) {
+                            streamData.stream?.close();
+                            collectionStreams?.delete(streamData.key);
+                        }
+
+                        streamWatchers.delete(streamId);
+                    }
+                } catch (e) {
+                    // Ignore cleanup errors
+                }
+            }
+            socket.data.activeWatchables.clear();
+        }
     });
     // Implements watch, watch-cb, watch:[STREAM_ID]:close, closed-stream:[STREAM_ID]
     socket.on("watch", (d: IWatchConfig) => WatchController(socket, d));
